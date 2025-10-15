@@ -217,15 +217,15 @@ class VoteController extends Controller
 
             $lobby = $userLobby;
 
-            if (!$lobby->getLobbyState()) {
-                return response()->json(
-                    [
-                        "success" => false,
-                        "error" => "Voting has not started yet",
-                    ],
-                    401,
-                );
-            }
+            // if (!$lobby->getLobbyState()) {
+            //     return response()->json(
+            //         [
+            //             "success" => false,
+            //             "error" => "Voting has not started yet",
+            //         ],
+            //         401,
+            //     );
+            // }
 
             $voteId = "vote_" . $lobby->getId();
             $vote = Cache::get($voteId);
