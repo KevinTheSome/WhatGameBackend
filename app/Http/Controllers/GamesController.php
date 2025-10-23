@@ -53,37 +53,46 @@ class gamesController extends Controller
         }
     }
 
+    //metode games kontrolierim kas atzīmē spēli kā mīļāko lietotājam
     public function addToFavourites(Request $request)
     {
+        //validē lietotāju atsūtīto spēles id
         $request->validate([
             "game_id" => "required|integer",
         ]);
 
+        //loģikas daļa kas atzīmē spēli kā mīļāko lietotājam
         try {
+            //parbauda vai lietotājs jau ir šo spēli atzīmējis kā mīļāko
             if (
                 Game::where("game_id", $request->game_id)
                     ->where("user_id", $request->user()->id)
                     ->exists()
             ) {
+                //Izdzēš ierakstu par mīļāko spēli
                 Game::where("game_id", $request->game_id)
                     ->where("user_id", $request->user()->id)
                     ->delete();
-            } else {
+            }
+            //Ja lietotājs nav šī spēle atzīmēta kā mīļāko izveido jaunu ierakstu
+            else {
                 Game::create([
                     "game_id" => $request->game_id,
                     "user_id" => $request->user()->id,
                 ]);
             }
-
+            //Veiksmīgi spēle atzīmēta kā mīļāko
             return response()->json(
                 ["success" => "Game added to favourites"],
                 200,
             );
         } catch (Throwable $th) {
+            //Izvada kļūdu par spēļu API ja tāda uzradusies
             Log::error("Failed to get games from RAWG API", [
                 "error" => $th->getMessage(),
             ]);
 
+            //Izvada kļūdu ziņojumu ja ir sastopta kļūda
             return response()->json(
                 [
                     "error" => "Failed to set game as favourite",

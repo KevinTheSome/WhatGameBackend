@@ -24,26 +24,30 @@ class LobbyController extends Controller
         return response()->json([], 200);
     }
 
+    // metode lobby kontrolierī priekš grupas izveides
     public function createLobby(Request $request): JsonResponse
     {
-        //validate request
+        //validē lietotāju datus vai ir derīgi
         $validated = $request->validate([
             "name" => "required|string|max:50",
             "filter" => "required|string|in:public,friends",
             "max_players" => "required|integer|min:2|max:24",
         ]);
 
+        //try cache priekš jebkādas kļūdas noķeršanas
         try {
+            //dabū lietotāju
             $user = $request->user();
-            //auth check
+            //pārbauda vai lietotājs ir derīgs un ir autentificēts
             if (!$user) {
                 return response()->json(
                     ["success" => false, "error" => "User not authenticated"],
                     401,
                 );
             }
-            //lobby check
+            //dabū visas grupas no cache
             $lobbies = Cache::get("lobbies", []);
+            //Iziet cauri visas grupām un apskatās vai lietotājs kādā nav
             foreach ($lobbies as $lobby) {
                 if (in_array($user->id, $lobby->getUsers())) {
                     return response()->json(
@@ -56,13 +60,14 @@ class LobbyController extends Controller
                 }
             }
 
-            //check if lobby with same name exists
+            //parbauda vai jaunajam grupai nav vārds kas jau iepriekš izmantots
             $lobbies = Cache::get("lobbies", []);
             $existingLobby = collect($lobbies)->first(
                 fn($lobby) => strtolower($lobby->name) ===
                     strtolower($validated["name"]),
             );
 
+            //Ja pastāv aizsūta lietotājam kļūdas ziņojumu
             if ($existingLobby) {
                 return response()->json(
                     [
@@ -73,7 +78,7 @@ class LobbyController extends Controller
                 );
             }
 
-            //create lobby
+            //ja viss pareizi izveido grupu
             $lobby = new Lobby(
                 $validated["name"],
                 $validated["filter"],
@@ -81,10 +86,11 @@ class LobbyController extends Controller
                 $request->user(),
             );
 
-            //add lobby to cache
+            //izveidoto grupu pievieno cache
             $lobbies[$lobby->getId()] = $lobby;
             Cache::put("lobbies", $lobbies);
 
+            //lietotājam atbild ar izveidoto grupu.
             return response()->json(
                 [
                     "success" => true,
@@ -94,6 +100,7 @@ class LobbyController extends Controller
                 201,
             );
         } catch (\Illuminate\Validation\ValidationException $e) {
+            //lietotājam atbild ar validācijas kļūdu ja tāda ir
             return response()->json(
                 [
                     "success" => false,
@@ -104,6 +111,7 @@ class LobbyController extends Controller
             );
         } catch (\Exception $e) {
             \Log::error("Error creating lobby: " . $e->getMessage());
+            //lietotājam atbild ar kļūdu ja tāda ir
             return response()->json(
                 [
                     "success" => false,
@@ -213,9 +221,14 @@ class LobbyController extends Controller
             $userFriends = $user->getUsersFriends($user);
             $friendIds = [];
             foreach ($userFriends as $friendRelation) {
-                if ((string) $friendRelation["sender_id"] === (string) $user->id) {
+                if (
+                    (string) $friendRelation["sender_id"] === (string) $user->id
+                ) {
                     $friendIds[] = (string) $friendRelation["receiver_id"];
-                } elseif ((string) $friendRelation["receiver_id"] === (string) $user->id) {
+                } elseif (
+                    (string) $friendRelation["receiver_id"] ===
+                    (string) $user->id
+                ) {
                     $friendIds[] = (string) $friendRelation["sender_id"];
                 }
             }

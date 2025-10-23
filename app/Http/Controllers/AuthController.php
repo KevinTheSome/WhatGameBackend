@@ -11,26 +11,32 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
+    //metode preikš registrācijas
     public function register(Request $request)
     {
+        //Pārbauda pieprasījumu datus
         $validator = Validator::make($request->all(), [
             "name" => "required|string|max:255",
             "email" => "required|string|email|max:255|unique:users",
             "password" => "required|string|min:8",
         ]);
 
+        //Atgriezt problēmu ja lietotāju dati nav pareizi
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
+        //Izveidot jaunu lietotāju izmantojot lietotāja modeli un lietotāja profilu datus
         $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
             "password" => Hash::make($request->password),
         ]);
 
+        //izveidot "token" priekš lietotāju pieprasījumu autentificēšanas
         $token = $user->createToken("auth_token")->plainTextToken;
 
+        //Atbilde ja veiksmīgi lietotājs ir izveidots
         return response()->json(
             [
                 "access_token" => $token,
