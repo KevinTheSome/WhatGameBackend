@@ -38,12 +38,12 @@ class User extends Authenticatable
         $sent_friends_query = Friend::where('sender_id', $user->id)
             ->where('accepted', true)
             ->join('users', 'users.id', '=', 'friends.receiver_id')
-            ->select('friends.*', 'users.name');
+            ->select('friends.*', 'users.name', 'users.profile_picture_url');
 
         $received_friends_query = Friend::where('receiver_id', $user->id)
             ->where('accepted', true)
             ->join('users', 'users.id', '=', 'friends.sender_id')
-            ->select('friends.*', 'users.name');
+            ->select('friends.*', 'users.name', 'users.profile_picture_url');
             
         $sent_friends = $sent_friends_query->get();
         $received_friends = $received_friends_query->get();
@@ -114,6 +114,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_picture_url',
     ];
 
     /**

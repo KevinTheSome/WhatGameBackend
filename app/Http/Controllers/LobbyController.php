@@ -369,7 +369,7 @@ class LobbyController extends Controller
             $usersId = $lobby->getUsers();
             $users = DB::table("users")
                 ->whereIn("id", $usersId)
-                ->select("id", "name")
+                ->select("id", "name", "profile_picture_url")
                 ->get()
                 ->toArray();
 

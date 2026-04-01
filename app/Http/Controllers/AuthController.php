@@ -16,7 +16,16 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             "name" => "required|string|max:255",
             "email" => "required|string|email|max:255|unique:users",
-            "password" => "required|string|min:8",
+            "password" => [
+                "required",
+                "string",
+                "min:8",
+                "regex:/[a-z]/",
+                "regex:/[A-Z]/",
+                "regex:/[^a-zA-Z0-9]/"
+            ],
+        ], [
+            "password.regex" => "Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 special character."
         ]);
 
         if ($validator->fails()) {
@@ -97,8 +106,17 @@ class AuthController extends Controller
     {
         $request->validate([
             "user_pass" => "required|string|min:8",
-            "new_pass" => "required|string|min:8",
+            "new_pass" => [
+                "required",
+                "string",
+                "min:8",
+                "regex:/[a-z]/",
+                "regex:/[A-Z]/",
+                "regex:/[^a-zA-Z0-9]/"
+            ],
             "new_pass_confirm" => "required|string|min:8",
+        ], [
+            "new_pass.regex" => "The new password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 special character."
         ]);
 
         if (!Hash::check($request->user_pass, $request->user()->password)) {
@@ -132,13 +150,14 @@ class AuthController extends Controller
             "email" =>
                 "sometimes|string|email|max:255|unique:users,email," .
                 $user->id,
+            "profile_picture_url" => "sometimes|url|nullable",
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $user->update($request->only("name", "email"));
+        $user->update($request->only("name", "email", "profile_picture_url"));
 
         return response()->json([
             "message" => "User updated successfully",

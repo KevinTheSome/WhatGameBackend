@@ -168,7 +168,7 @@ class FriendController extends Controller
             )
                 ->where("accepted", true)
                 ->join("users", "users.id", "=", "friends.receiver_id")
-                ->select("friends.*", "users.name");
+                ->select("friends.*", "users.name", "users.profile_picture_url");
 
             $received_friends_query = Friend::where(
                 "receiver_id",
@@ -176,7 +176,7 @@ class FriendController extends Controller
             )
                 ->where("accepted", true)
                 ->join("users", "users.id", "=", "friends.sender_id")
-                ->select("friends.*", "users.name");
+                ->select("friends.*", "users.name", "users.profile_picture_url");
 
             if ($request->has("search") && $request->search != "") {
                 $searchTerm = "%" . $request->search . "%";
@@ -220,12 +220,12 @@ class FriendController extends Controller
             $sent_query = Friend::where("sender_id", $request->user()->id)
                 ->where("accepted", false)
                 ->join("users", "users.id", "=", "friends.receiver_id")
-                ->select("friends.*", "users.name");
+                ->select("friends.*", "users.name", "users.profile_picture_url");
 
             $received_query = Friend::where("receiver_id", $request->user()->id)
                 ->where("accepted", false)
                 ->join("users", "users.id", "=", "friends.sender_id")
-                ->select("friends.*", "users.name");
+                ->select("friends.*", "users.name", "users.profile_picture_url");
 
             if ($request->has("search") && $request->search != "") {
                 $searchTerm = "%" . $request->search . "%";
