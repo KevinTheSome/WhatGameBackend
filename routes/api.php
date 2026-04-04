@@ -99,10 +99,10 @@ Route::middleware("auth:sanctum")->group(function () {
     );
 
     //del later
-    Route::get("/getAllLobies", [LobbyController::class, "getAllLobies"])->name(
-        "getAllLobies",
+    Route::get("/getAllLobbies", [LobbyController::class, "getAllLobbies"])->name(
+        "getAllLobbies",
     );
-    Route::get("/delAllLobies", [LobbyController::class, "delAllLobies"])->name(
-        "delAllLobies",
+    Route::get("/delAllLobbies", [LobbyController::class, "delAllLobbies"])->name(
+        "delAllLobbies",
     );
 });

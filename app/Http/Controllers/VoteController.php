@@ -172,7 +172,7 @@ class VoteController extends Controller
         }
     }
 
-    public function deleateEmptyAndOldLobbys()
+    public function deleteEmptyAndOldLobbies()
     {
         $lobbies = Cache::get("lobbies", []);
 
@@ -237,6 +237,18 @@ class VoteController extends Controller
                 );
             }
 
+            $isVotingComplete = $vote->isVotingComplete($lobby);
+
+            if (!$isVotingComplete) {
+                return response()->json(
+                    [
+                        "success" => true,
+                        "voting_finished" => false,
+                    ],
+                    200
+                );
+            }
+
             $results = $vote->getVoteResults();
             $favorites = $vote->getVotedGames();
 
@@ -248,6 +260,7 @@ class VoteController extends Controller
             return response()->json(
                 [
                     "success" => true,
+                    "voting_finished" => true,
                     "lobby_id" => $lobby->getId(),
                     "games" => $sortedGames,
                     "players_favorite_games" => $favorites,
@@ -397,6 +410,18 @@ class VoteController extends Controller
                 ->unique("game_id")
                 ->values()
                 ->toArray();
+
+            $voteId = "vote_" . $currentLobby->getId();
+            $voteSession = Cache::get($voteId);
+            if ($voteSession) {
+                $playerVotes = $voteSession->getPlayerVotes();
+                $userVotes = $playerVotes[$user->id] ?? [];
+                
+                $games = array_filter($games, function($g) use ($userVotes) {
+                    return !isset($userVotes[$g['game_id']]) || $userVotes[$g['game_id']] === 0;
+                });
+                $games = array_values($games);
+            }
 
             return response()->json(
                 [

@@ -2,7 +2,7 @@
 use Illuminate\Support\Facades\Schedule;
 use App\Http\Controllers\VoteController;
 
-Schedule::call([VoteController::class, "deleateEmptyAndOldLobbys"])->twiceDaily(
+Schedule::call([VoteController::class, "deleteEmptyAndOldLobbies"])->twiceDaily(
     1,
     13,
 );

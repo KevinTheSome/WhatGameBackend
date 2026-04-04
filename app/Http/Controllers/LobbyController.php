@@ -11,13 +11,13 @@ use Illuminate\Support\Facades\DB;
 
 class LobbyController extends Controller
 {
-    public function getAllLobies(Request $request): JsonResponse
+    public function getAllLobbies(Request $request): JsonResponse
     {
         //del test route
         return response()->json(Cache::get("lobbies", []), 200);
     }
 
-    public function delAllLobies(Request $request): JsonResponse
+    public function delAllLobbies(Request $request): JsonResponse
     {
         //del test route
         Cache::forget("lobbies");
@@ -197,7 +197,7 @@ class LobbyController extends Controller
     public function getLobbies(Request $request): JsonResponse
     {
         $request->validate([
-            "search" => "sometimes|max:255",
+            "search" => "sometimes|string|nullable|max:255",
             "filter" => "sometimes|string|in:all,friends",
         ]);
         try {

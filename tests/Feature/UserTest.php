@@ -19,14 +19,14 @@ class AuthTest extends TestCase
         $this->user = User::factory()->create([
             "name" => "Test User",
             "email" => "test@example.com",
-            "password" => Hash::make("password123"),
+            "password" => Hash::make("P@ssw0rd123!"),
         ]);
 
         // Create a second user for friend requests
         $this->friendUser = User::factory()->create([
             "name" => "Friend User",
             "email" => "friend@example.com",
-            "password" => Hash::make("password123"),
+            "password" => Hash::make("P@ssw0rd123!"),
         ]);
     }
 
@@ -35,8 +35,8 @@ class AuthTest extends TestCase
         $response = $this->postJson("/api/register", [
             "name" => "New User",
             "email" => "newuser@example.com",
-            "password" => "password123",
-            "password_confirmation" => "password123",
+            "password" => "P@ssw0rd123!",
+            "password_confirmation" => "P@ssw0rd123!",
         ]);
 
         $response->assertStatus(201)->assertJsonStructure([
@@ -55,7 +55,7 @@ class AuthTest extends TestCase
     {
         $response = $this->postJson("/api/login", [
             "email" => "test@example.com",
-            "password" => "password123",
+            "password" => "P@ssw0rd123!",
         ]);
 
         $response->assertStatus(200)->assertJsonStructure([
@@ -71,7 +71,7 @@ class AuthTest extends TestCase
         // Noteiktajam api routam aizsūta derīgu json.
         $loginResponse = $this->postJson("/api/login", [
             "email" => "test@example.com",
-            "password" => "password123",
+            "password" => "P@ssw0rd123!",
         ]);
 
         // Dabū tokena vērtību no atbildes.

@@ -15,7 +15,7 @@ class FriendController extends Controller
     public function peopleSearch(Request $request)
     {
         $request->validate([
-            "search" => "sometimes|max:255",
+            "search" => "sometimes|string|nullable|max:255",
         ]);
 
         try {
@@ -158,7 +158,7 @@ class FriendController extends Controller
     public function getFriends(Request $request)
     {
         $request->validate([
-            "search" => "sometimes",
+            "search" => "sometimes|string|nullable|max:255",
         ]);
 
         try {
@@ -214,7 +214,7 @@ class FriendController extends Controller
     public function getPending(Request $request)
     {
         $request->validate([
-            "search" => "sometimes",
+            "search" => "sometimes|string|nullable|max:255",
         ]);
         try {
             $sent_query = Friend::where("sender_id", $request->user()->id)

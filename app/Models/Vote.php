@@ -178,6 +178,22 @@ class Vote
         ];
     }
 
+    public function isVotingComplete($currentLobby)
+    {
+        $currentUsers = $currentLobby->getUsers();
+        foreach ($this->playerVotes as $playerId => $votes) {
+            if (!in_array($playerId, $currentUsers)) {
+                continue;
+            }
+            foreach ($votes as $gameId => $vote) {
+                if ($vote === 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public function toArray(): array
     {
         return [

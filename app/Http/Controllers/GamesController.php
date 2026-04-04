@@ -14,6 +14,7 @@ class gamesController extends Controller
     {
         $request->validate([
             "search" => "required|string",
+            "page" => "sometimes|integer|min:1",
         ]);
 
         try {
@@ -97,7 +98,8 @@ class gamesController extends Controller
     public function getUserFavourites(Request $request)
     {
         $request->validate([
-            "search" => "sometimes|max:255",
+            "search" => "sometimes|string|nullable|max:255",
+            "user_id" => "sometimes|integer|exists:users,id",
         ]);
         try {
             $favResponse = [];
@@ -155,7 +157,7 @@ class gamesController extends Controller
     public function delUserFavourit(Request $request)
     {
         $request->validate([
-            "game_id" => "required",
+            "game_id" => "required|integer",
         ]);
         try {
             Game::where("game_id", $request->game_id)->delete();
