@@ -6,6 +6,7 @@ use App\Models\Lobby;
 use App\Models\Vote;
 use App\Models\User;
 use App\Models\Game;
+use App\Models\UserStatistic;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -133,6 +134,9 @@ class VoteController extends Controller
             // Update cache with new vote data
             $voteId = "vote_" . $userLobby->getId();
             Cache::put($voteId, $vote);
+
+            $statistic = UserStatistic::getOrCreateForUser($user->id);
+            $statistic->incrementGamesVotedOn();
 
             $games = $vote->getGames();
             $gameData = $games[$validated["game_id"]];

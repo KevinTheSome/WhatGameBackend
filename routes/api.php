@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\LobbyController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\UserStatisticController;
 
 Route::post("/register", [AuthController::class, "register"])->name("register");
 Route::post("/login", [AuthController::class, "login"])->name("login");
@@ -104,5 +105,13 @@ Route::middleware("auth:sanctum")->group(function () {
     );
     Route::get("/delAllLobbies", [LobbyController::class, "delAllLobbies"])->name(
         "delAllLobbies",
+    );
+
+    // user statistics
+    Route::get("/userStatistics", [UserStatisticController::class, "getStatistics"])->name(
+        "userStatistics",
+    );
+    Route::post("/recordLogin", [UserStatisticController::class, "recordLogin"])->name(
+        "recordLogin",
     );
 });

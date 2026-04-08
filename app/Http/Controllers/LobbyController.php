@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Lobby;
 use App\Models\Vote;
+use App\Models\UserStatistic;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -84,6 +85,9 @@ class LobbyController extends Controller
             //add lobby to cache
             $lobbies[$lobby->getId()] = $lobby;
             Cache::put("lobbies", $lobbies);
+
+            $statistic = UserStatistic::getOrCreateForUser($user->id);
+            $statistic->incrementLobbiesCreated();
 
             return response()->json(
                 [
@@ -167,6 +171,9 @@ class LobbyController extends Controller
 
             $lobbies[$validated["lobby_id"]] = $lobby;
             Cache::put("lobbies", $lobbies);
+
+            $statistic = UserStatistic::getOrCreateForUser($user->id);
+            $statistic->incrementLobbiesJoined();
 
             return response()->json([
                 "success" => true,
