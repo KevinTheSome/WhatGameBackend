@@ -7,6 +7,7 @@ use App\Models\Vote;
 use App\Models\User;
 use App\Models\Game;
 use App\Models\UserStatistic;
+use App\Models\UserGameVote;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -140,6 +141,21 @@ class VoteController extends Controller
 
             $games = $vote->getGames();
             $gameData = $games[$validated["game_id"]];
+
+            $userGameVote = UserGameVote::firstOrCreate(
+                ['user_id' => $user->id, 'game_id' => $validated["game_id"]],
+                ['upvotes' => 0, 'downvotes' => 0, 'game_name' => $gameData["name"]]
+            );
+
+            if ($userGameVote->game_name !== $gameData["name"]) {
+                $userGameVote->update(['game_name' => $gameData["name"]]);
+            }
+
+            if ($validated["vote"] == 1) {
+                $userGameVote->increment('upvotes');
+            } else {
+                $userGameVote->increment('downvotes');
+            }
 
             return response()->json(
                 [
