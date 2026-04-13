@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>WhatGame - Decide What to Play</title>
     <meta name="description" content="WhatGame is the ultimate app to decide what game your group should play next. Group voting, lobbies, and gaming libraries in one place.">
     
@@ -24,10 +25,10 @@
                         app: {
                             bg: 'rgb(25, 28, 29)',
                             fg: 'rgb(225, 227, 227)',
-                            primary: 'rgb(79, 216, 235)',
-                            primaryDark: 'rgb(0, 104, 116)',
-                            primaryContainer: 'rgb(0, 79, 88)',
-                            onPrimaryContainer: 'rgb(152, 240, 255)',
+                            primary: 'rgb(0, 179, 152)',
+                            primaryDark: 'rgb(0, 120, 102)',
+                            primaryContainer: 'rgb(0, 89, 76)',
+                            onPrimaryContainer: 'rgb(102, 230, 203)',
                             surfaceVariant: 'rgb(63, 72, 74)',
                             tertiary: 'rgb(186, 198, 234)',
                         }
@@ -44,7 +45,7 @@
                             "100%": { transform: "translate(0px, 0px) scale(1)" }
                         },
                         fadeInUp: {
-                            "0%": { opacity: 0, transform: "translateY(30px)" },
+                            "0%": { opacity: 0.1, transform: "translateY(30px)" },
                             "100%": { opacity: 1, transform: "translateY(0)" }
                         }
                     }
@@ -57,6 +58,12 @@
         body {
             background-color: rgb(25, 28, 29);
             color: rgb(225, 227, 227);
+        }
+        .bg-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 179, 152, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 179, 152, 0.05) 1px, transparent 1px);
         }
         .glass-panel {
             background: rgba(30, 34, 35, 0.6);
@@ -89,14 +96,7 @@
         .delay-300 { animation-delay: 300ms; }
     </style>
 </head>
-<body class="antialiased overflow-x-hidden relative">
-
-    <!-- Decorative background elements -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
-        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-app-primary/10 rounded-full mix-blend-screen filter blur-[100px] animate-blob"></div>
-        <div class="absolute top-[20%] right-[-5%] w-96 h-96 bg-app-tertiary/10 rounded-full mix-blend-screen filter blur-[100px] animate-blob delay-200"></div>
-        <div class="absolute bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-app-primaryContainer/20 rounded-full mix-blend-screen filter blur-[120px] animate-blob delay-300"></div>
-    </div>
+<body class="antialiased overflow-x-hidden relative bg-pattern">
 
     <!-- Navigation -->
     <nav class="fixed w-full z-50 transition-all duration-300 backdrop-blur-md bg-app-bg/80 border-b border-white/5">
@@ -123,20 +123,20 @@
             <div class="flex flex-col lg:flex-row items-center gap-16">
                 <!-- Text Content -->
                 <div class="flex-1 text-center lg:text-left z-10">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel mb-8 opacity-0 animate-fade-in-up">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel mb-8 animate-fade-in-up">
                         <span class="w-2 h-2 rounded-full bg-app-primary animate-pulse"></span>
                         <span class="text-xs font-semibold text-app-primary uppercase tracking-wider">Now in Beta</span>
                     </div>
                     
-                    <h1 class="text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6 opacity-0 animate-fade-in-up delay-100 text-transparent bg-clip-text bg-gradient-to-br from-white to-app-fg/50">
+                    <h1 class="text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6 animate-fade-in-up delay-100 text-transparent bg-clip-text bg-gradient-to-br from-white to-app-fg/50">
                         Stop Arguing.<br/>Start <span class="text-app-primary">Playing.</span>
                     </h1>
                     
-                    <p class="text-xl text-app-fg/70 mb-10 max-w-2xl mx-auto lg:mx-0 opacity-0 animate-fade-in-up delay-200 leading-relaxed">
+                    <p class="text-xl text-app-fg/70 mb-10 max-w-2xl mx-auto lg:mx-0 animate-fade-in-up delay-200 leading-relaxed">
                         The ultimate companion app for gaming groups. Create lobbies, build your library, and democratically vote on what to play next in seconds.
                     </p>
                     
-                    <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start opacity-0 animate-fade-in-up delay-300">
+                    <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start animate-fade-in-up delay-300">
                         <a href="#download" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-app-primary text-app-bg font-bold text-lg hover:shadow-[0_0_30px_rgba(79,216,235,0.4)] transition-all flex items-center justify-center gap-2 group">
                             Download Now
                             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -148,7 +148,7 @@
                 </div>
 
                 <!-- App Mockup Image Placeholder -->
-                <div class="flex-1 relative w-full max-w-md mx-auto opacity-0 animate-fade-in-up delay-300 z-10 lg:pl-10">
+                <div class="flex-1 relative w-full max-w-md mx-auto animate-fade-in-up delay-300 z-10 lg:pl-10">
                     <div class="relative w-full aspect-[1/2] rounded-[2.5rem] bg-app-surfaceVariant border-4 border-app-surfaceVariant overflow-hidden app-mockup shadow-2xl">
                         <!-- Simulated App UI in place of an image -->
                         <div class="absolute inset-0 bg-app-bg flex flex-col pt-8 px-6">
@@ -303,8 +303,8 @@
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-app-fg/50">
             <div>&copy; {{ date('Y') }} WhatGame. All rights reserved.</div>
             <div class="flex items-center gap-6">
-                <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                <a href="/privacy-policy" class="hover:text-white transition-colors">Privacy Policy</a>
+                <a href="/terms-of-service" class="hover:text-white transition-colors">Terms of Service</a>
             </div>
         </div>
     </footer>
