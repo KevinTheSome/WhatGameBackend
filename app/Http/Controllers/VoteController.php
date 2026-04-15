@@ -340,6 +340,21 @@ class VoteController extends Controller
                 );
             }
 
+            $games = $this->getLobbyGames($lobby);
+            if (empty($games)) {
+                $lobbies = Cache::get("lobbies", []);
+                unset($lobbies[$lobby->getId()]);
+                Cache::put("lobbies", $lobbies);
+
+                return response()->json(
+                    [
+                        "success" => false,
+                        "error" => "No games to vote on. Lobby has been ended.",
+                    ],
+                    400,
+                );
+            }
+
             $lobby->startLobby($user);
 
             // Update cache
@@ -429,6 +444,20 @@ class VoteController extends Controller
                 ->unique("game_id")
                 ->values()
                 ->toArray();
+
+            if (empty($games)) {
+                $lobbies = Cache::get("lobbies", []);
+                unset($lobbies[$currentLobby->getId()]);
+                Cache::put("lobbies", $lobbies);
+
+                return response()->json(
+                    [
+                        "success" => false,
+                        "error" => "No games to vote on. Lobby has been ended.",
+                    ],
+                    400,
+                );
+            }
 
             $voteSession = $this->getOrCreateVote($currentLobby);
             if ($voteSession) {
