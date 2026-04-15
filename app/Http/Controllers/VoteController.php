@@ -247,8 +247,7 @@ class VoteController extends Controller
                 );
             }
 
-            $voteId = "vote_" . $lobby->getId();
-            $vote = Cache::get($voteId);
+            $vote = $this->getOrCreateVote($lobby);
 
             if (!$vote) {
                 return response()->json(
@@ -431,8 +430,7 @@ class VoteController extends Controller
                 ->values()
                 ->toArray();
 
-            $voteId = "vote_" . $currentLobby->getId();
-            $voteSession = Cache::get($voteId);
+            $voteSession = $this->getOrCreateVote($currentLobby);
             if ($voteSession) {
                 $playerVotes = $voteSession->getPlayerVotes();
                 $userVotes = $playerVotes[$user->id] ?? [];
