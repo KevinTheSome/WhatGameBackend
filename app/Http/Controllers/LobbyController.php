@@ -241,17 +241,32 @@ class LobbyController extends Controller
                     ) !== false;
                 });
             }
+            $userId = (string) $user->id;
             $visibleLobbies = $tempLobbies->filter(function (Lobby $lobby) use (
                 $friendIds,
                 $filterType,
+                $userId,
             ) {
+                if ($lobby->getLobbyState()) {
+                    return false;
+                }
+
+                if ($lobby->filter === "friends") {
+                    $lobbyUsers = $lobby->getUsers();
+                    $hasFriendInLobby = count(array_intersect($lobbyUsers, $friendIds)) > 0;
+                    $isUserInLobby = in_array($userId, $lobbyUsers);
+
+                    if (!$hasFriendInLobby && !$isUserInLobby) {
+                        return false;
+                    }
+                }
+
                 $creatorId = $lobby->getCreatorId();
 
                 if ($filterType === "all") {
-                    return !$lobby->getLobbyState();
+                    return true;
                 } elseif ($filterType === "friends") {
-                    return in_array($creatorId, $friendIds) &&
-                        !$lobby->getLobbyState();
+                    return in_array((string)$creatorId, $friendIds);
                 }
 
                 return false;
