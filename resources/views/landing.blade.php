@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>WhatGame - Decide What to Play</title>
     <meta name="description" content="WhatGame is the ultimate app to decide what game your group should play next. Group voting, lobbies, and gaming libraries in one place.">
-    
+
     <!-- Using Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +61,7 @@
         }
         .bg-pattern {
             background-size: 40px 40px;
-            background-image: 
+            background-image:
                 linear-gradient(to right, rgba(0, 179, 152, 0.05) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(0, 179, 152, 0.05) 1px, transparent 1px);
         }
@@ -127,15 +127,15 @@
                         <span class="w-2 h-2 rounded-full bg-app-primary animate-pulse"></span>
                         <span class="text-xs font-semibold text-app-primary uppercase tracking-wider">Now in Beta</span>
                     </div>
-                    
+
                     <h1 class="text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6 animate-fade-in-up delay-100 text-transparent bg-clip-text bg-gradient-to-br from-white to-app-fg/50">
                         Stop Arguing.<br/>Start <span class="text-app-primary">Playing.</span>
                     </h1>
-                    
+
                     <p class="text-xl text-app-fg/70 mb-10 max-w-2xl mx-auto lg:mx-0 animate-fade-in-up delay-200 leading-relaxed">
                         The ultimate companion app for gaming groups. Create lobbies, build your library, and democratically vote on what to play next in seconds.
                     </p>
-                    
+
                     <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start animate-fade-in-up delay-300">
                         <a href="#download" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-app-primary text-app-bg font-bold text-lg hover:shadow-[0_0_30px_rgba(79,216,235,0.4)] transition-all flex items-center justify-center gap-2 group">
                             Download Now
@@ -158,7 +158,7 @@
                             </div>
                             <h3 class="text-2xl font-bold text-white mb-2">Game Night Lobby</h3>
                             <p class="text-app-fg/60 text-sm mb-6">Waiting for 4/5 players...</p>
-                            
+
                             <div class="space-y-3">
                                 <div class="bg-app-primaryContainer/30 p-4 rounded-xl flex items-center justify-between border border-app-primary/20">
                                     <div class="flex items-center gap-3">
@@ -188,7 +188,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="mt-auto pb-6">
                                 <div class="w-full bg-app-primary text-app-bg py-3 rounded-xl font-bold text-center">Cast Your Vote</div>
                             </div>
@@ -199,7 +199,7 @@
         </div>
     </main>
 
-   
+
 
     <!-- Features Section -->
     <section id="features" class="py-24 relative z-10 border-t border-white/5 bg-black/20">
@@ -208,7 +208,7 @@
                 <h2 class="text-sm font-bold text-app-primary uppercase tracking-widest mb-2">Everything You Need</h2>
                 <h3 class="text-3xl md:text-5xl font-bold text-white">Your Gaming Hub</h3>
             </div>
-            
+
             <div class="grid md:grid-cols-3 gap-8">
                 <!-- Feature 1 -->
                 <div class="glass-panel p-8 rounded-3xl">
@@ -218,7 +218,7 @@
                     <h4 class="text-xl font-bold text-white mb-3">Group Lobbies</h4>
                     <p class="text-app-fg/70 leading-relaxed">Instantly gather your friends into dynamic lobbies. See who's online, ready to play, and invite missing players with one tap.</p>
                 </div>
-                
+
                 <!-- Feature 2 -->
                 <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group border-app-primary/30">
                     <div class="absolute inset-0 bg-gradient-to-br from-app-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -228,7 +228,7 @@
                     <h4 class="text-xl font-bold text-white mb-3 relative z-10">Live Voting</h4>
                     <p class="text-app-fg/70 leading-relaxed relative z-10">No more endless debate. Propose games, cast your votes, and let democracy decide the next adventure for your squad.</p>
                 </div>
-                
+
                 <!-- Feature 3 -->
                 <div class="glass-panel p-8 rounded-3xl">
                     <div class="w-14 h-14 rounded-2xl bg-app-tertiary/10 flex items-center justify-center mb-6 text-app-tertiary">
@@ -248,11 +248,11 @@
                 <h2 class="text-sm font-bold text-app-tertiary uppercase tracking-widest mb-2">3 Simple Steps</h2>
                 <h3 class="text-3xl md:text-5xl font-bold text-white">How WhatGame Works</h3>
             </div>
-            
+
             <div class="flex flex-col md:flex-row gap-8 relative">
                 <!-- Connecting Line (hidden on mobile) -->
                 <div class="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-app-primary/0 via-app-primary/30 to-app-primary/0 -translate-y-1/2 z-0 hidden"></div>
-                
+
                 <!-- Step 1 -->
                 <div class="flex-1 text-center relative z-10 group">
                     <div class="w-20 h-20 mx-auto rounded-full glass-panel flex items-center justify-center mb-6 text-2xl font-bold text-white border-2 border-app-primary/20 group-hover:border-app-primary transition-colors shadow-[0_0_20px_rgba(79,216,235,0.1)] group-hover:shadow-[0_0_30px_rgba(79,216,235,0.3)] bg-app-bg">
@@ -261,7 +261,7 @@
                     <h4 class="text-xl font-bold text-white mb-3">Create a Lobby</h4>
                     <p class="text-app-fg/70">Connect with friends to see everyone's current game libraries in one place.</p>
                 </div>
-                
+
                 <!-- Step 2 -->
                 <div class="flex-1 text-center relative z-10 group">
                     <div class="w-20 h-20 mx-auto rounded-full glass-panel flex items-center justify-center mb-6 text-2xl font-bold text-white border-2 border-app-tertiary/20 group-hover:border-app-tertiary transition-colors shadow-[0_0_20px_rgba(186,198,234,0.1)] group-hover:shadow-[0_0_30px_rgba(186,198,234,0.3)] bg-app-bg">
@@ -270,7 +270,7 @@
                     <h4 class="text-xl font-bold text-white mb-3">Filter Options</h4>
                     <p class="text-app-fg/70">Only games that everyone in the lobby owns will show up as options.</p>
                 </div>
-                
+
                 <!-- Step 3 -->
                 <div class="flex-1 text-center relative z-10 group">
                     <div class="w-20 h-20 mx-auto rounded-full glass-panel flex items-center justify-center mb-6 text-2xl font-bold text-white border-2 border-app-primaryDark/40 group-hover:border-app-primaryDark transition-colors shadow-[0_0_20px_rgba(0,104,116,0.1)] group-hover:shadow-[0_0_30px_rgba(0,104,116,0.4)] bg-app-bg">
@@ -288,9 +288,9 @@
         <div class="max-w-4xl mx-auto px-6 text-center">
             <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">Ready to end the debate?</h2>
             <p class="text-xl text-app-fg/70 mb-10">Download WhatGame today and get straight to gaming.</p>
-            
+
             <div class="flex justify-center">
-                <a href="#temp-download" class="px-8 py-4 rounded-xl bg-app-primary text-app-bg font-bold text-lg hover:shadow-[0_0_30px_rgba(79,216,235,0.4)] transition-all flex items-center justify-center gap-3 group">
+                <a href="https://drive.google.com/file/d/1O3sLBc4yxgDVDJzuuwaZFUklKOTX5dyC/view?usp=sharing" class="px-8 py-4 rounded-xl bg-app-primary text-app-bg font-bold text-lg hover:shadow-[0_0_30px_rgba(79,216,235,0.4)] transition-all flex items-center justify-center gap-3 group">
                     <span>Download App</span>
                     <svg class="w-5 h-5 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 </a>
