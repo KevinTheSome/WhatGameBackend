@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - WhatGame</title>
-    
+    <link rel="icon" type="image/x-icon" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
@@ -40,7 +40,7 @@
         }
         .bg-pattern {
             background-size: 40px 40px;
-            background-image: 
+            background-image:
                 linear-gradient(to right, rgba(0, 179, 152, 0.05) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(0, 179, 152, 0.05) 1px, transparent 1px);
         }
@@ -74,13 +74,13 @@
     <main class="relative pt-32 pb-20 px-6 flex-grow">
         <div class="max-w-4xl mx-auto glass-panel p-8 md:p-12 rounded-3xl">
             <h1 class="text-4xl md:text-5xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-br from-white to-app-primary/80">Privacy Policy</h1>
-            
+
             <div class="space-y-6 text-app-fg/80 leading-relaxed">
                 <p>Welcome to the Privacy Policy for WhatGame. We are highly committed to retaining your trust. As such, we believe in full transparency regarding exactly what happens with your data.</p>
-                
+
                 <h2 class="text-2xl font-bold text-white mt-8 mb-4">1. No Data Selling</h2>
                 <p><strong>We do not, and will never, sell your personal data to any third parties.</strong> Your privacy is a priority, and all collected data is strictly used to provide, improve, and secure the WhatGame service.</p>
-                
+
                 <h2 class="text-2xl font-bold text-white mt-8 mb-4">2. What Information We Collect</h2>
                 <p>In order for WhatGame to function and serve your groups properly, we save the following information from our users:</p>
                 <ul class="list-disc pl-6 space-y-2 mt-2">

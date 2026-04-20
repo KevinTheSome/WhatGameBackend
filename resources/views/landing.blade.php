@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>WhatGame - Decide What to Play</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.png">
     <meta name="description" content="WhatGame is the ultimate app to decide what game your group should play next. Group voting, lobbies, and gaming libraries in one place.">
 
     <!-- Using Google Fonts -->
@@ -123,10 +124,6 @@
             <div class="flex flex-col lg:flex-row items-center gap-16">
                 <!-- Text Content -->
                 <div class="flex-1 text-center lg:text-left z-10">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel mb-8 animate-fade-in-up">
-                        <span class="w-2 h-2 rounded-full bg-app-primary animate-pulse"></span>
-                        <span class="text-xs font-semibold text-app-primary uppercase tracking-wider">Now in Beta</span>
-                    </div>
 
                     <h1 class="text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6 animate-fade-in-up delay-100 text-transparent bg-clip-text bg-gradient-to-br from-white to-app-fg/50">
                         Stop Arguing.<br/>Start <span class="text-app-primary">Playing.</span>
