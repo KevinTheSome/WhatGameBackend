@@ -9,30 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        app: {
-                            bg: 'rgb(25, 28, 29)',
-                            fg: 'rgb(225, 227, 227)',
-                            primary: 'rgb(0, 179, 152)',
-                            primaryDark: 'rgb(0, 120, 102)',
-                            primaryContainer: 'rgb(0, 89, 76)',
-                            onPrimaryContainer: 'rgb(102, 230, 203)',
-                            surfaceVariant: 'rgb(63, 72, 74)',
-                            tertiary: 'rgb(186, 198, 234)',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="{{ asset('build/assets/app.css') }}">
     <style>
         body {
             background-color: rgb(25, 28, 29);
