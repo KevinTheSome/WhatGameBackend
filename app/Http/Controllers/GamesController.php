@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Throwable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
 use App\Models\Game;
 use Illuminate\Support\Facades\Log;
 
@@ -205,41 +204,44 @@ class gamesController extends Controller
     public function getFilters(Request $request)
     {
         try {
-            $genres = Cache::remember("rawg_genres", 3600, function () {
-                $response = Http::get(
-                    "https://api.rawg.io/api/genres?key=" . env("RAWG_API_KEY"),
-                );
-                $response->throw();
-                return collect($response->json()["results"])
-                    ->map(fn($g) => ["id" => $g["id"], "name" => $g["name"]])
-                    ->toArray();
-            });
-
-            $tags = Cache::remember("rawg_tags", 3600, function () {
-                $response = Http::get(
-                    "https://api.rawg.io/api/tags?key=" .
-                        env("RAWG_API_KEY") .
-                        "&page_size=20",
-                );
-                $response->throw();
-                return collect($response->json()["results"])
-                    ->map(fn($t) => ["id" => $t["id"], "name" => $t["name"]])
-                    ->toArray();
-            });
+            $key = env("RAWG_API_KEY");
+            
+            $genresResponse = Http::get("https://api.rawg.io/api/genres", [
+                "key" => $key,
+            ]);
+            $genresResponse->throw();
+            $genresData = $genresResponse->json();
+            
+            $tagsResponse = Http::get("https://api.rawg.io/api/tags", [
+                "key" => $key,
+                "page_size" => 50,
+            ]);
+            $tagsResponse->throw();
+            $tagsData = $tagsResponse->json();
+            
+            $genres = collect($genresData["results"] ?? [])->map(fn($g) => [
+                "id" => $g["id"],
+                "name" => $g["name"],
+            ])->toArray();
+            
+            $tags = collect($tagsData["results"] ?? [])->map(fn($t) => [
+                "id" => $t["id"],
+                "name" => $t["name"],
+            ])->toArray();
 
             return response()->json([
                 "genres" => $genres,
                 "tags" => $tags,
             ], 200);
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             Log::error("Failed to get filters from RAWG API", [
-                "error" => $th->getMessage(),
+                "error" => $e->getMessage(),
             ]);
 
-            return response()->json(
-                ["error" => "Failed to get filter options"],
-                500,
-            );
+            return response()->json([
+                "genres" => [],
+                "tags" => [],
+            ], 200);
         }
     }
 

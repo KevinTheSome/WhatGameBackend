@@ -14,6 +14,10 @@ Route::post("/login", [AuthController::class, "login"])->name("login");
 Route::get("/status", function (Request $request) {
     return response()->json(["success" => "success"], 200);
 });
+Route::get("/filters", [
+    GamesController::class,
+    "getFilters",
+])->name("getFilters");
 
 Route::middleware("auth:sanctum")->group(function () {
     // user
@@ -48,10 +52,6 @@ Route::get("/gameDetails", [
     GamesController::class,
     "getGameDetails",
 ])->name("getGameDetails");
-Route::get("/filters", [
-    GamesController::class,
-    "getFilters",
-])->name("getFilters");
 
     // friends
     Route::post("/addFriend", [FriendController::class, "addFriend"])->name(
