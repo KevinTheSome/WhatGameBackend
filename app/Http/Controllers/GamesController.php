@@ -177,4 +177,41 @@ class gamesController extends Controller
             );
         }
     }
+
+    public function getGameDetails(Request $request)
+    {
+        $request->validate([
+            "game_id" => "required|integer",
+        ]);
+
+        try {
+            $response = Http::get(
+                "https://api.rawg.io/api/games/{$request->game_id}?key=" .
+                    env("RAWG_API_KEY"),
+            );
+
+            $response->throw();
+
+            $data = $response->json();
+
+            return response()->json([
+                "name" => $data["name"] ?? null,
+                "background_image" => $data["background_image"] ?? null,
+                "released" => $data["released"] ?? null,
+                "platforms" => $data["platforms"] ?? [],
+                "developers" => $data["developers"] ?? [],
+                "publishers" => $data["publishers"] ?? [],
+                "genres" => $data["genres"] ?? [],
+            ], 200);
+        } catch (\Throwable $th) {
+            Log::error("Failed to get game details from RAWG API", [
+                "error" => $th->getMessage(),
+            ]);
+
+            return response()->json(
+                ["error" => "Failed to get game details"],
+                500,
+            );
+        }
+    }
 }

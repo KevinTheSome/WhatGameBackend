@@ -40,10 +40,14 @@ Route::middleware("auth:sanctum")->group(function () {
         GamesController::class,
         "addToFavourites",
     ])->name("addToFavourites");
-    Route::post("/getUserFavourites", [
-        GamesController::class,
-        "getUserFavourites",
-    ])->name("getUserFavourites");
+Route::post("/getUserFavourites", [
+    GamesController::class,
+    "getUserFavourites",
+])->name("getUserFavourites");
+Route::get("/gameDetails", [
+    GamesController::class,
+    "getGameDetails",
+])->name("getGameDetails");
 
     // friends
     Route::post("/addFriend", [FriendController::class, "addFriend"])->name(
