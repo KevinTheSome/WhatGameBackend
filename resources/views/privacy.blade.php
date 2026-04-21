@@ -7,9 +7,9 @@
     <link rel="icon" type="image/x-icon" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    @vite('resources/css/app.css')
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ asset('build/assets/app.css') }}">
     <style>
         body {
             background-color: rgb(25, 28, 29);

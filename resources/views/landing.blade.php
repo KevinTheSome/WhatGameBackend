@@ -7,13 +7,12 @@
     <title>WhatGame - Decide What to Play</title>
     <link rel="icon" type="image/x-icon" href="/favicon.png">
     <meta name="description" content="WhatGame is the ultimate app to decide what game your group should play next. Group voting, lobbies, and gaming libraries in one place.">
-
+     @vite('resources/css/app.css')
     <!-- Using Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ asset('build/assets/app.css') }}">
 
     <style>
         body {
