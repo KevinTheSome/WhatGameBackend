@@ -48,6 +48,10 @@ Route::get("/gameDetails", [
     GamesController::class,
     "getGameDetails",
 ])->name("getGameDetails");
+Route::get("/filters", [
+    GamesController::class,
+    "getFilters",
+])->name("getFilters");
 
     // friends
     Route::post("/addFriend", [FriendController::class, "addFriend"])->name(

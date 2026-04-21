@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Throwable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Game;
 use Illuminate\Support\Facades\Log;
 
@@ -15,16 +16,39 @@ class gamesController extends Controller
         $request->validate([
             "search" => "required|string",
             "page" => "sometimes|integer|min:1",
+            "genres" => "sometimes|string",
+            "tags" => "sometimes|string",
+            "metacritic" => "sometimes|string",
+            "ordering" => "sometimes|string",
         ]);
 
         try {
+            $params = [
+                "key" => env("RAWG_API_KEY"),
+                "search" => $request->search,
+                "page" => $request->page ?? 1,
+                "page_size" => 12,
+            ];
+
+            if ($request->filled("genres")) {
+                $params["genres"] = $request->genres;
+            }
+
+            if ($request->filled("tags")) {
+                $params["tags"] = $request->tags;
+            }
+
+            if ($request->filled("metacritic")) {
+                $params["metacritic"] = $request->metacritic;
+            }
+
+            if ($request->filled("ordering")) {
+                $params["ordering"] = $request->ordering;
+            }
+
             $results = Http::get(
-                "https://api.rawg.io/api/games?key={key}&search={search}&page={page}&page_size=12",
-                [
-                    "key" => env("RAWG_API_KEY"),
-                    "search" => $request->search,
-                    "page" => $request->page,
-                ],
+                "https://api.rawg.io/api/games",
+                $params,
             );
 
             $results->throw();
@@ -173,6 +197,47 @@ class gamesController extends Controller
 
             return response()->json(
                 ["error" => "Failed to remove game from favourites"],
+                500,
+            );
+        }
+    }
+
+    public function getFilters(Request $request)
+    {
+        try {
+            $genres = Cache::remember("rawg_genres", 3600, function () {
+                $response = Http::get(
+                    "https://api.rawg.io/api/genres?key=" . env("RAWG_API_KEY"),
+                );
+                $response->throw();
+                return collect($response->json()["results"])
+                    ->map(fn($g) => ["id" => $g["id"], "name" => $g["name"]])
+                    ->toArray();
+            });
+
+            $tags = Cache::remember("rawg_tags", 3600, function () {
+                $response = Http::get(
+                    "https://api.rawg.io/api/tags?key=" .
+                        env("RAWG_API_KEY") .
+                        "&page_size=20",
+                );
+                $response->throw();
+                return collect($response->json()["results"])
+                    ->map(fn($t) => ["id" => $t["id"], "name" => $t["name"]])
+                    ->toArray();
+            });
+
+            return response()->json([
+                "genres" => $genres,
+                "tags" => $tags,
+            ], 200);
+        } catch (\Throwable $th) {
+            Log::error("Failed to get filters from RAWG API", [
+                "error" => $th->getMessage(),
+            ]);
+
+            return response()->json(
+                ["error" => "Failed to get filter options"],
                 500,
             );
         }
