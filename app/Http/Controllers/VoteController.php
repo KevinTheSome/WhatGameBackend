@@ -505,4 +505,54 @@ class VoteController extends Controller
             "total_votes" => $winner["votes"],
         ];
     }
+
+    public function resetVoting(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json(
+                    ["success" => false, "error" => "User not authenticated"],
+                    401,
+                );
+            }
+
+            $lobby = $this->getCurrentLobby($user);
+
+            if (!$lobby) {
+                return response()->json(
+                    ["success" => false, "error" => "You are not in any lobby"],
+                    400,
+                );
+            }
+
+            $voteId = "vote_" . $lobby->getId();
+            Cache::forget($voteId);
+
+            $lobby->state = false;
+
+            $lobbies = Cache::get("lobbies", []);
+            $lobbyId = $lobby->getId();
+            $lobbies[$lobbyId] = $lobby;
+            Cache::put("lobbies", $lobbies);
+
+            return response()->json(
+                [
+                    "success" => true,
+                    "message" => "Voting reset successfully. You can start a new vote.",
+                ],
+                200,
+            );
+        } catch (\Exception $e) {
+            \Log::error("Error resetting voting: " . $e->getMessage());
+            return response()->json(
+                [
+                    "success" => false,
+                    "error" => "Failed to reset voting. Please try again.",
+                    "errorMessages" => $e->getMessage(),
+                ],
+                500,
+            );
+        }
+    }
 }

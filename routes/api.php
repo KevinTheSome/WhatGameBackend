@@ -106,6 +106,9 @@ Route::get("/gameDetails", [
     Route::get("/getVoteGames", [VoteController::class, "getVoteGames"])->name(
         "getVoteGames",
     );
+    Route::post("/resetVoting", [VoteController::class, "resetVoting"])->name(
+        "resetVoting",
+    );
 
     //del later
     Route::get("/getAllLobbies", [LobbyController::class, "getAllLobbies"])->name(
