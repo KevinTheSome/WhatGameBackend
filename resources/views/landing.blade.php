@@ -72,7 +72,10 @@
                 <a href="#how-it-works" class="hover:text-app-primary transition-colors">How it Works</a>
             </div>
             <div>
-                <a href="#download" class="px-6 py-2.5 rounded-full bg-app-primary/10 text-app-primary border border-app-primary/20 hover:bg-app-primary hover:text-app-bg transition-all font-medium">Get the App</a>
+                <a href="#download" class="px-6 py-2.5 rounded-full bg-app-primary/10 text-app-primary border border-app-primary/20 hover:bg-app-primary hover:text-app-bg transition-all font-medium hidden md:inline-block">Get the App</a>
+                <a href="#download" class="md:hidden px-3 py-2.5 rounded-full bg-app-primary/10 text-app-primary border border-app-primary/20 hover:bg-app-primary hover:text-app-bg transition-all flex items-center justify-center" aria-label="Download App">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </a>
             </div>
         </div>
     </nav>
