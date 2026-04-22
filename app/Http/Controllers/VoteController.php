@@ -259,11 +259,12 @@ class VoteController extends Controller
             $isVotingComplete = $vote->isVotingComplete($lobby);
 
             if (!$isVotingComplete) {
+                $progress = $vote->getRemainingPlayersProgress($lobby);
                 return response()->json(
-                    [
+                    array_merge([
                         "success" => true,
                         "voting_finished" => false,
-                    ],
+                    ], $progress),
                     200
                 );
             }

@@ -194,6 +194,32 @@ class Vote
         return true;
     }
 
+    public function getRemainingPlayersProgress($currentLobby)
+    {
+        $currentUsers = $currentLobby->getUsers();
+        $remainingPlayerIds = [];
+
+        foreach ($this->playerVotes as $playerId => $votes) {
+            if (!in_array($playerId, $currentUsers)) {
+                continue;
+            }
+            foreach ($votes as $gameId => $vote) {
+                if ($vote === 0) {
+                    $remainingPlayerIds[] = $playerId;
+                    break; // Move to next player
+                }
+            }
+        }
+
+        $remainingNames = User::whereIn('id', $remainingPlayerIds)->pluck('name')->toArray();
+
+        return [
+            'remaining_count' => count($remainingPlayerIds),
+            'remaining_names' => $remainingNames,
+            'total_players' => count($currentUsers),
+        ];
+    }
+
     public function toArray(): array
     {
         return [
