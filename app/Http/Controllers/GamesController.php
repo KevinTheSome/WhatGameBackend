@@ -303,35 +303,23 @@ class gamesController extends Controller
                     ->get();
 
                 $genres = [];
-                $tags = [];
 
                 foreach ($sampledFavs as $fav) {
                     $info = $fav->getInfo();
-                    if (is_array($info)) {
-                        if (isset($info["genres"])) {
-                            foreach ($info["genres"] as $genre) {
-                                $genres[] = $genre["id"];
-                            }
-                        }
-                        if (isset($info["tags"])) {
-                            foreach ($info["tags"] as $tag) {
-                                $tags[] = $tag["id"];
-                            }
+                    if (is_array($info) && isset($info["genres"])) {
+                        foreach ($info["genres"] as $genre) {
+                            $genres[] = $genre["id"];
                         }
                     }
                 }
 
-                // Pick the top 3 most-frequent genres and top 3 tags
+                // Use only the top 2 most-frequent genres.
+                // Avoid mixing genres AND tags — the RAWG API applies them as AND,
+                // which creates an over-restrictive filter for users with diverse libraries.
                 if (!empty($genres)) {
                     arsort($genreCounts = array_count_values($genres));
-                    $topGenres = array_slice(array_keys($genreCounts), 0, 3);
+                    $topGenres = array_slice(array_keys($genreCounts), 0, 2);
                     $params["genres"] = implode(",", $topGenres);
-                }
-
-                if (!empty($tags)) {
-                    arsort($tagCounts = array_count_values($tags));
-                    $topTags = array_slice(array_keys($tagCounts), 0, 3);
-                    $params["tags"] = implode(",", $topTags);
                 }
             }
 
@@ -344,10 +332,33 @@ class gamesController extends Controller
                     $game["favorited"] = in_array($game["id"], $userFavorites);
                 }
 
-                // Filter out already-favorited games from recommendations
+                // Filter out already-favorited games
                 $response["results"] = array_values(array_filter($response["results"], function ($game) {
                     return !$game["favorited"];
                 }));
+
+                // Fallback: if genre-filtered results are all favorited, retry with
+                // just top-rated games so the user always sees recommendations
+                if (empty($response["results"]) && isset($params["genres"])) {
+                    $fallbackParams = [
+                        "key"       => env("RAWG_API_KEY"),
+                        "page_size" => 12,
+                        "ordering"  => "-rating",
+                    ];
+                    $fallback = Http::get("https://api.rawg.io/api/games", $fallbackParams);
+                    $fallback->throw();
+                    $fallbackData = $fallback->json();
+
+                    if (isset($fallbackData["results"])) {
+                        foreach ($fallbackData["results"] as &$game) {
+                            $game["favorited"] = in_array($game["id"], $userFavorites);
+                        }
+                        $fallbackData["results"] = array_values(array_filter($fallbackData["results"], function ($game) {
+                            return !$game["favorited"];
+                        }));
+                        $response = $fallbackData;
+                    }
+                }
             }
 
             return response()->json($response, 200);
