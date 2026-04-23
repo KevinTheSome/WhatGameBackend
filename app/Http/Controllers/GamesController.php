@@ -285,83 +285,66 @@ class gamesController extends Controller
     public function getRecommendations(Request $request)
     {
         try {
-            $userFavorites = Game::where("user_id", $request->user()->id)
+            $key = env("RAWG_API_KEY");
+
+            $userFavoriteIds = Game::where("user_id", $request->user()->id)
                 ->pluck("game_id")
                 ->toArray();
 
-            $params = [
-                "key" => env("RAWG_API_KEY"),
-                "page_size" => 12,
-                "ordering" => "-rating",
-            ];
+            $recommended = [];
+            $seen = [];
 
-            if (!empty($userFavorites)) {
-                // Sample up to 5 random favorites to build a taste profile
-                $sampledFavs = Game::where("user_id", $request->user()->id)
-                    ->inRandomOrder()
-                    ->limit(5)
-                    ->get();
+            if (!empty($userFavoriteIds)) {
+                // Pick up to 3 random favorites and ask RAWG for similar games for each.
+                // /games/{id}/suggested is RAWG's native recommendation endpoint —
+                // no genre/tag aggregation needed, much more reliable signal.
+                $sampleIds = $userFavoriteIds;
+                shuffle($sampleIds);
+                $sampleIds = array_slice($sampleIds, 0, min(3, count($sampleIds)));
 
-                $genres = [];
+                foreach ($sampleIds as $gameId) {
+                    $response = Http::get(
+                        "https://api.rawg.io/api/games/{$gameId}/suggested",
+                        ["key" => $key, "page_size" => 6]
+                    );
 
-                foreach ($sampledFavs as $fav) {
-                    $info = $fav->getInfo();
-                    if (is_array($info) && isset($info["genres"])) {
-                        foreach ($info["genres"] as $genre) {
-                            $genres[] = $genre["id"];
-                        }
+                    if (!$response->successful()) {
+                        continue;
                     }
-                }
 
-                // Use only the top 2 most-frequent genres.
-                // Avoid mixing genres AND tags — the RAWG API applies them as AND,
-                // which creates an over-restrictive filter for users with diverse libraries.
-                if (!empty($genres)) {
-                    arsort($genreCounts = array_count_values($genres));
-                    $topGenres = array_slice(array_keys($genreCounts), 0, 2);
-                    $params["genres"] = implode(",", $topGenres);
-                }
-            }
-
-            $results = Http::get("https://api.rawg.io/api/games", $params);
-            $results->throw();
-            $response = $results->json();
-
-            if (isset($response["results"])) {
-                foreach ($response["results"] as &$game) {
-                    $game["favorited"] = in_array($game["id"], $userFavorites);
-                }
-
-                // Filter out already-favorited games
-                $response["results"] = array_values(array_filter($response["results"], function ($game) {
-                    return !$game["favorited"];
-                }));
-
-                // Fallback: if genre-filtered results are all favorited, retry with
-                // just top-rated games so the user always sees recommendations
-                if (empty($response["results"]) && isset($params["genres"])) {
-                    $fallbackParams = [
-                        "key"       => env("RAWG_API_KEY"),
-                        "page_size" => 12,
-                        "ordering"  => "-rating",
-                    ];
-                    $fallback = Http::get("https://api.rawg.io/api/games", $fallbackParams);
-                    $fallback->throw();
-                    $fallbackData = $fallback->json();
-
-                    if (isset($fallbackData["results"])) {
-                        foreach ($fallbackData["results"] as &$game) {
-                            $game["favorited"] = in_array($game["id"], $userFavorites);
+                    foreach ($response->json()["results"] ?? [] as $game) {
+                        if (isset($seen[$game["id"]])) {
+                            continue;
                         }
-                        $fallbackData["results"] = array_values(array_filter($fallbackData["results"], function ($game) {
-                            return !$game["favorited"];
-                        }));
-                        $response = $fallbackData;
+                        $seen[$game["id"]] = true;
+                        $game["favorited"] = in_array($game["id"], $userFavoriteIds);
+
+                        // Only include games the user hasn't already favourited
+                        if (!$game["favorited"]) {
+                            $recommended[] = $game;
+                        }
                     }
                 }
             }
 
-            return response()->json($response, 200);
+            // Fallback (or no favorites): return globally top-rated games
+            if (empty($recommended)) {
+                $fallback = Http::get("https://api.rawg.io/api/games", [
+                    "key"       => $key,
+                    "page_size" => 12,
+                    "ordering"  => "-rating",
+                ]);
+                $fallback->throw();
+
+                foreach ($fallback->json()["results"] ?? [] as $game) {
+                    $game["favorited"] = in_array($game["id"], $userFavoriteIds);
+                    if (!$game["favorited"]) {
+                        $recommended[] = $game;
+                    }
+                }
+            }
+
+            return response()->json(["results" => array_slice($recommended, 0, 12)], 200);
 
         } catch (\Exception $e) {
             Log::error("Failed to get recommendations from RAWG API", [
