@@ -281,4 +281,84 @@ class gamesController extends Controller
             );
         }
     }
+
+    public function getRecommendations(Request $request)
+    {
+        try {
+            $userFavorites = Game::where("user_id", $request->user()->id)
+                ->pluck("game_id")
+                ->toArray();
+
+            $params = [
+                "key" => env("RAWG_API_KEY"),
+                "page_size" => 12,
+                "ordering" => "-rating", // Default to top-rated
+            ];
+
+            if (!empty($userFavorites)) {
+                // Get up to 2 random favorites to base recommendations on
+                $randomFavs = Game::where("user_id", $request->user()->id)
+                    ->inRandomOrder()
+                    ->limit(2)
+                    ->get();
+
+                $genres = [];
+                $tags = [];
+
+                foreach ($randomFavs as $fav) {
+                    $info = $fav->getInfo();
+                    if (is_array($info)) {
+                        if (isset($info["genres"])) {
+                            foreach ($info["genres"] as $genre) {
+                                $genres[] = $genre["id"];
+                            }
+                        }
+                        if (isset($info["tags"])) {
+                            foreach ($info["tags"] as $tag) {
+                                $tags[] = $tag["id"];
+                            }
+                        }
+                    }
+                }
+
+                // Pick a few top genres and tags
+                if (!empty($genres)) {
+                    $topGenres = array_slice(array_keys(array_count_values($genres)), 0, 2);
+                    $params["genres"] = implode(",", $topGenres);
+                }
+                
+                if (!empty($tags)) {
+                    $topTags = array_slice(array_keys(array_count_values($tags)), 0, 2);
+                    $params["tags"] = implode(",", $topTags);
+                }
+            }
+
+            $results = Http::get("https://api.rawg.io/api/games", $params);
+            $results->throw();
+            $response = $results->json();
+
+            if (isset($response["results"])) {
+                foreach ($response["results"] as &$game) {
+                    $game["favorited"] = in_array($game["id"], $userFavorites);
+                }
+
+                // Filter out already favorited games from recommendations
+                $response["results"] = array_values(array_filter($response["results"], function($game) {
+                    return !$game["favorited"];
+                }));
+            }
+
+            return response()->json($response, 200);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to get recommendations from RAWG API", [
+                "error" => $e->getMessage(),
+            ]);
+
+            return response()->json(
+                ["error" => "Failed to get game recommendations"],
+                500,
+            );
+        }
+    }
 }
