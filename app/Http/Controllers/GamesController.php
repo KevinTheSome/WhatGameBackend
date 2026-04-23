@@ -292,20 +292,20 @@ class gamesController extends Controller
             $params = [
                 "key" => env("RAWG_API_KEY"),
                 "page_size" => 12,
-                "ordering" => "-rating", // Default to top-rated
+                "ordering" => "-rating",
             ];
 
             if (!empty($userFavorites)) {
-                // Get up to 2 random favorites to base recommendations on
-                $randomFavs = Game::where("user_id", $request->user()->id)
+                // Sample up to 5 random favorites to build a taste profile
+                $sampledFavs = Game::where("user_id", $request->user()->id)
                     ->inRandomOrder()
-                    ->limit(2)
+                    ->limit(5)
                     ->get();
 
                 $genres = [];
                 $tags = [];
 
-                foreach ($randomFavs as $fav) {
+                foreach ($sampledFavs as $fav) {
                     $info = $fav->getInfo();
                     if (is_array($info)) {
                         if (isset($info["genres"])) {
@@ -321,14 +321,16 @@ class gamesController extends Controller
                     }
                 }
 
-                // Pick a few top genres and tags
+                // Pick the top 3 most-frequent genres and top 3 tags
                 if (!empty($genres)) {
-                    $topGenres = array_slice(array_keys(array_count_values($genres)), 0, 2);
+                    arsort($genreCounts = array_count_values($genres));
+                    $topGenres = array_slice(array_keys($genreCounts), 0, 3);
                     $params["genres"] = implode(",", $topGenres);
                 }
-                
+
                 if (!empty($tags)) {
-                    $topTags = array_slice(array_keys(array_count_values($tags)), 0, 2);
+                    arsort($tagCounts = array_count_values($tags));
+                    $topTags = array_slice(array_keys($tagCounts), 0, 3);
                     $params["tags"] = implode(",", $topTags);
                 }
             }
@@ -342,8 +344,8 @@ class gamesController extends Controller
                     $game["favorited"] = in_array($game["id"], $userFavorites);
                 }
 
-                // Filter out already favorited games from recommendations
-                $response["results"] = array_values(array_filter($response["results"], function($game) {
+                // Filter out already-favorited games from recommendations
+                $response["results"] = array_values(array_filter($response["results"], function ($game) {
                     return !$game["favorited"];
                 }));
             }
