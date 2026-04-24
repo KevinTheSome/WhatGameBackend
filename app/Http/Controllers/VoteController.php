@@ -37,7 +37,12 @@ class VoteController extends Controller
                 $gameId = $gameData->game_id;
 
                 if (isset($existingGames[$gameId])) {
-                    return [$gameId => $existingGames[$gameId]["name"]];
+                    return [
+                        $gameId => [
+                            "name" => $existingGames[$gameId]["name"] ?? "Unknown Game",
+                            "background_image" => $existingGames[$gameId]["background_image"] ?? null,
+                        ]
+                    ];
                 }
 
                 $game = new Game([
@@ -49,7 +54,10 @@ class VoteController extends Controller
 
                 $info = $game->getInfo();
                 return [
-                    $gameId => $info["name"] ?? "Unknown Game",
+                    $gameId => [
+                        "name" => $info["name"] ?? "Unknown Game",
+                        "background_image" => $info["background_image"] ?? null,
+                    ]
                 ];
             })
             ->toArray();

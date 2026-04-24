@@ -35,15 +35,17 @@ class Vote
         $this->created_at = now();
         $this->games = [];
 
-        foreach ($games as $gameId => $gameName) {
+        foreach ($games as $gameId => $gameData) {
+            $name = is_array($gameData) ? ($gameData["name"] ?? "Unknown Game") : $gameData;
+            $bg = is_array($gameData) ? ($gameData["background_image"] ?? null) : null;
+
             $this->games[$gameId] = [
-                "name" => $gameName,
+                "name" => $name,
+                "background_image" => $bg,
                 "votes" => 0,
                 "upvotes" => 0,
                 "downvotes" => 0,
             ];
-
-            $this->games[$gameId]["background_image"] = null;
         }
 
         $this->playerVotes = [];
@@ -250,10 +252,14 @@ class Vote
     {
         $lobbyPlayers = $this->lobby->getUsers();
 
-        foreach ($newGames as $gameId => $gameName) {
+        foreach ($newGames as $gameId => $gameData) {
             if (!isset($this->games[$gameId])) {
+                $name = is_array($gameData) ? ($gameData["name"] ?? "Unknown Game") : $gameData;
+                $bg = is_array($gameData) ? ($gameData["background_image"] ?? null) : null;
+
                 $this->games[$gameId] = [
-                    "name" => $gameName,
+                    "name" => $name,
+                    "background_image" => $bg,
                     "votes" => 0,
                     "upvotes" => 0,
                     "downvotes" => 0,
