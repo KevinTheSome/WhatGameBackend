@@ -294,10 +294,53 @@ class gamesController extends Controller
             $recommended = [];
             $seen = [];
 
-            if (!empty($userFavoriteIds)) {
-                // Pick up to 3 random favorites and ask RAWG for similar games for each.
-                // /games/{id}/suggested is RAWG's native recommendation endpoint —
-                // no genre/tag aggregation needed, much more reliable signal.
+            $lastFavorited = Game::where("user_id", $request->user()->id)
+                ->orderBy("created_at", "desc")
+                ->first();
+
+            if ($lastFavorited) {
+                $gameInfo = Http::get(
+                    "https://api.rawg.io/api/games/{$lastFavorited->game_id}",
+                    ["key" => $key]
+                );
+
+                if ($gameInfo->successful()) {
+                    $genres = collect($gameInfo->json()["genres"] ?? [])
+                        ->pluck("slug")
+                        ->toArray();
+
+                    if (!empty($genres)) {
+                        $pageStart = rand(1, 5);
+
+                        $searchResponse = Http::get(
+                            "https://api.rawg.io/api/games",
+                            [
+                                "key" => $key,
+                                "genres" => implode(",", $genres),
+                                "metacritic" => "80,100",
+                                "page_size" => 12,
+                                "page" => $pageStart,
+                                "ordering" => "-metacritic",
+                            ]
+                        );
+
+                        if ($searchResponse->successful()) {
+                            foreach ($searchResponse->json()["results"] ?? [] as $game) {
+                                if (isset($seen[$game["id"]])) {
+                                    continue;
+                                }
+                                $seen[$game["id"]] = true;
+                                $game["favorited"] = in_array($game["id"], $userFavoriteIds);
+                                if (!$game["favorited"]) {
+                                    $recommended[] = $game;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (empty($recommended) && !empty($userFavoriteIds)) {
                 $sampleIds = $userFavoriteIds;
                 shuffle($sampleIds);
                 $sampleIds = array_slice($sampleIds, 0, min(3, count($sampleIds)));
@@ -318,8 +361,6 @@ class gamesController extends Controller
                         }
                         $seen[$game["id"]] = true;
                         $game["favorited"] = in_array($game["id"], $userFavoriteIds);
-
-                        // Only include games the user hasn't already favourited
                         if (!$game["favorited"]) {
                             $recommended[] = $game;
                         }
@@ -327,12 +368,14 @@ class gamesController extends Controller
                 }
             }
 
-            // Fallback (or no favorites): return globally top-rated games
             if (empty($recommended)) {
+                $pageStart = rand(1, 5);
                 $fallback = Http::get("https://api.rawg.io/api/games", [
                     "key"       => $key,
                     "page_size" => 12,
-                    "ordering"  => "-rating",
+                    "page"      => $pageStart,
+                    "ordering"  => "-metacritic",
+                    "metacritic" => "80,100",
                 ]);
                 $fallback->throw();
 
