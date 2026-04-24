@@ -173,12 +173,13 @@ class Vote
     {
         $currentUsers = $currentLobby->getUsers();
 
-        $votingStartedAt = $this->created_at;
+        $votingStartedAt = $this->created_at ?? now();
         $timeoutSeconds = self::VOTING_TIMEOUT_MINUTES * 60;
-        $hasTimedOut = $votingStartedAt && now()->greaterThan($votingStartedAt->addSeconds($timeoutSeconds));
+        $hasTimedOut = $votingStartedAt && now()->diffInSeconds($votingStartedAt) > $timeoutSeconds;
 
-        if ($hasTimedOut) {
-            Log::info("Voting timeout reached for lobby {$currentLobby->getId()}, concluding voting");
+        $allGames = array_keys($this->games);
+        if (empty($allGames)) {
+            Log::info("No games in voting session for lobby {$currentLobby->getId()}, concluding voting");
             return true;
         }
 
@@ -187,25 +188,29 @@ class Vote
                 continue;
             }
 
-            $hasUnvotedGames = false;
-            $playerHasAnyVotes = false;
-            foreach ($votes as $gameId => $vote) {
-                if (!isset($this->games[$gameId])) {
-                    continue;
-                }
-                if ($vote === 0) {
-                    $hasUnvotedGames = true;
-                } else {
-                    $playerHasAnyVotes = true;
+            $playerVotedCount = 0;
+            $playerTotalGames = count($allGames);
+            foreach ($allGames as $gameId) {
+                if (isset($votes[$gameId]) && $votes[$gameId] !== 0) {
+                    $playerVotedCount++;
                 }
             }
 
-            if ($hasUnvotedGames && $playerHasAnyVotes) {
+            if ($playerVotedCount === 0) {
+                if (!$hasTimedOut) {
+                    Log::warning("Player {$playerId} has not voted on any games in lobby {$currentLobby->getId()}");
+                    return false;
+                }
+                Log::info("Player {$playerId} timeout with no votes, concluding anyway");
+                continue;
+            }
+
+            if ($playerVotedCount < $playerTotalGames && !$hasTimedOut) {
                 return false;
             }
 
-            if ($hasUnvotedGames && !$playerHasAnyVotes) {
-                Log::warning("Player {$playerId} has not voted on any games in lobby {$currentLobby->getId()}");
+            if ($playerVotedCount < $playerTotalGames && $hasTimedOut) {
+                Log::info("Player {$playerId} timeout with partial votes ({$playerVotedCount}/{$playerTotalGames}), concluding anyway");
             }
         }
 
