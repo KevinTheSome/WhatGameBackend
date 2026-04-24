@@ -6,9 +6,12 @@ use App\Models\User;
 use App\Models\Game;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Vote
 {
+    private const VOTING_TIMEOUT_MINUTES = 5;
+
     private $id;
     private $lobby;
     private $games = [];
@@ -170,19 +173,42 @@ class Vote
     {
         $currentUsers = $currentLobby->getUsers();
 
+        $votingStartedAt = $this->created_at;
+        $timeoutSeconds = self::VOTING_TIMEOUT_MINUTES * 60;
+        $hasTimedOut = $votingStartedAt && now()->greaterThan($votingStartedAt->addSeconds($timeoutSeconds));
+
+        if ($hasTimedOut) {
+            Log::info("Voting timeout reached for lobby {$currentLobby->getId()}, concluding voting");
+            return true;
+        }
+
         foreach ($this->playerVotes as $playerId => $votes) {
             if (!in_array($playerId, $currentUsers)) {
                 continue;
             }
+
+            $hasUnvotedGames = false;
+            $playerHasAnyVotes = false;
             foreach ($votes as $gameId => $vote) {
                 if (!isset($this->games[$gameId])) {
                     continue;
                 }
                 if ($vote === 0) {
-                    return false;
+                    $hasUnvotedGames = true;
+                } else {
+                    $playerHasAnyVotes = true;
                 }
             }
+
+            if ($hasUnvotedGames && $playerHasAnyVotes) {
+                return false;
+            }
+
+            if ($hasUnvotedGames && !$playerHasAnyVotes) {
+                Log::warning("Player {$playerId} has not voted on any games in lobby {$currentLobby->getId()}");
+            }
         }
+
         return true;
     }
 
