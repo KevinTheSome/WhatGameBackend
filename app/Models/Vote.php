@@ -43,18 +43,7 @@ class Vote
                 "downvotes" => 0,
             ];
 
-            try {
-                $response = Http::get(
-                    "https://api.rawg.io/api/games/{$gameId}?key=" .
-                        env("RAWG_API_KEY"),
-                );
-                $response->throw();
-                $data = $response->json();
-                $this->games[$gameId]["background_image"] =
-                    $data["background_image"] ?? null;
-            } catch (\Exception $e) {
-                $this->games[$gameId]["background_image"] = null;
-            }
+            $this->games[$gameId]["background_image"] = null;
         }
 
         $this->playerVotes = [];

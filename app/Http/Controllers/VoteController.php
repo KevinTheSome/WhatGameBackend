@@ -24,34 +24,34 @@ class VoteController extends Controller
         );
     }
 
-    private function getLobbyGames($lobby)
+    private function getLobbyGames($lobby, $existingGames = [])
     {
         return collect($lobby->getUsers())
             ->map(function ($userId) {
                 $user = User::find($userId);
-                $userGames = $user->getFavoritedGames();
-
-                return collect($userGames)
-                    ->map(function ($gameData) {
-                        $game = new Game([
-                            "user_id" => $gameData->user_id,
-                            "game_id" => $gameData->game_id,
-                        ]);
-                        $game->id = $gameData->id;
-                        $game->timestamps = false;
-
-                        $info = $game->getInfo();
-                        return [
-                            "id" => $gameData->game_id,
-                            "name" => $info["name"] ?? "Unknown Game",
-                        ];
-                    })
-                    ->filter()
-                    ->toArray();
+                return $user->getFavoritedGames();
             })
             ->flatten(1)
-            ->unique("id")
-            ->pluck("name", "id")
+            ->unique("game_id")
+            ->mapWithKeys(function ($gameData) use ($existingGames) {
+                $gameId = $gameData->game_id;
+
+                if (isset($existingGames[$gameId])) {
+                    return [$gameId => $existingGames[$gameId]["name"]];
+                }
+
+                $game = new Game([
+                    "user_id" => $gameData->user_id,
+                    "game_id" => $gameId,
+                ]);
+                $game->id = $gameData->id;
+                $game->timestamps = false;
+
+                $info = $game->getInfo();
+                return [
+                    $gameId => $info["name"] ?? "Unknown Game",
+                ];
+            })
             ->toArray();
     }
 
@@ -71,7 +71,7 @@ class VoteController extends Controller
             return $vote;
         }
 
-        $currentGames = $this->getLobbyGames($lobby);
+        $currentGames = $this->getLobbyGames($lobby, $vote->getGames());
         $vote->syncNewGames($currentGames);
         Cache::put($voteId, $vote);
 
@@ -103,40 +103,56 @@ class VoteController extends Controller
                 );
             }
 
-            $vote = $this->getOrCreateVote($userLobby);
-
-            if (!$vote) {
-                return response()->json(
-                    [
-                        "success" => false,
-                        "error" => "Voting has not started yet",
-                    ],
-                    400,
-                );
-            }
-
-            $playerVotes = $vote->getPlayerVotes();
-            if (
-                isset($playerVotes[$user->id][$validated["game_id"]]) &&
-                $playerVotes[$user->id][$validated["game_id"]] !== 0
-            ) {
-                return response()->json(
-                    [
-                        "success" => false,
-                        "error" => "You have already voted on this game",
-                    ],
-                    400,
-                );
-            }
-
-            $vote->voteGame(
-                $validated["game_id"],
-                $user->id,
-                $validated["vote"],
-            );
-
             $voteId = "vote_" . $userLobby->getId();
-            Cache::put($voteId, $vote);
+            $lock = Cache::lock("lock_" . $voteId, 10);
+
+            try {
+                $lock->block(5);
+
+                $vote = $this->getOrCreateVote($userLobby);
+
+                if (!$vote) {
+                    return response()->json(
+                        [
+                            "success" => false,
+                            "error" => "Voting has not started yet",
+                        ],
+                        400,
+                    );
+                }
+
+                $playerVotes = $vote->getPlayerVotes();
+                if (
+                    isset($playerVotes[$user->id][$validated["game_id"]]) &&
+                    $playerVotes[$user->id][$validated["game_id"]] !== 0
+                ) {
+                    return response()->json(
+                        [
+                            "success" => false,
+                            "error" => "You have already voted on this game",
+                        ],
+                        400,
+                    );
+                }
+
+                $vote->voteGame(
+                    $validated["game_id"],
+                    $user->id,
+                    $validated["vote"],
+                );
+
+                Cache::put($voteId, $vote);
+            } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+                return response()->json(
+                    [
+                        "success" => false,
+                        "error" => "Server busy. Please try again.",
+                    ],
+                    503,
+                );
+            } finally {
+                $lock->release();
+            }
 
             $statistic = UserStatistic::getOrCreateForUser($user->id);
             $statistic->incrementGamesVotedOn();
@@ -249,7 +265,23 @@ class VoteController extends Controller
                 );
             }
 
-            $vote = $this->getOrCreateVote($lobby);
+            $voteId = "vote_" . $lobby->getId();
+            $lock = Cache::lock("lock_" . $voteId, 10);
+
+            try {
+                $lock->block(5);
+                $vote = $this->getOrCreateVote($lobby);
+            } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+                return response()->json(
+                    [
+                        "success" => false,
+                        "error" => "Server busy. Please try again.",
+                    ],
+                    503,
+                );
+            } finally {
+                $lock->release();
+            }
 
             if (!$vote) {
                 return response()->json(
@@ -461,7 +493,25 @@ class VoteController extends Controller
                 );
             }
 
-            $voteSession = $this->getOrCreateVote($currentLobby);
+            $voteId = "vote_" . $currentLobby->getId();
+            $lock = Cache::lock("lock_" . $voteId, 10);
+            $voteSession = null;
+
+            try {
+                $lock->block(5);
+                $voteSession = $this->getOrCreateVote($currentLobby);
+            } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+                return response()->json(
+                    [
+                        "success" => false,
+                        "error" => "Server busy. Please try again.",
+                    ],
+                    503,
+                );
+            } finally {
+                $lock->release();
+            }
+
             if ($voteSession) {
                 $playerVotes = $voteSession->getPlayerVotes();
                 $userVotes = $playerVotes[$user->id] ?? [];
