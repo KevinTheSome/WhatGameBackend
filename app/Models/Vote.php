@@ -67,12 +67,15 @@ class Vote
     private function initializePlayerVotes()
     {
         $lobbyPlayers = $this->lobby->getUsers();
+        \Log::info("[Vote.initializePlayerVotes] Lobby players: " . json_encode($lobbyPlayers) . " games: " . json_encode(array_keys($this->games)));
+
         foreach ($lobbyPlayers as $playerId) {
             $this->playerVotes[$playerId] = [];
             foreach (array_keys($this->games) as $gameId) {
                 $this->playerVotes[$playerId][$gameId] = 0; // 0 = no vote, 1 = upvote, -1 = downvote
             }
         }
+        \Log::info("[Vote.initializePlayerVotes] Initialized playerVotes: " . json_encode(array_keys($this->playerVotes)));
     }
 
     public function voteGame($gameId, $userId, $vote)
@@ -181,29 +184,38 @@ class Vote
     public function isVotingComplete($currentLobby)
     {
         $currentUsers = $currentLobby->getUsers();
+        \Log::info("[Vote.isVotingComplete] Checking with " . count($currentUsers) . " users and " . count($this->playerVotes) . " player vote records");
+
         foreach ($this->playerVotes as $playerId => $votes) {
+            \Log::info("[Vote.isVotingComplete] Player: " . $playerId . " in currentUsers: " . (in_array($playerId, $currentUsers) ? "yes" : "no") . " votes: " . json_encode($votes));
             if (!in_array($playerId, $currentUsers)) {
                 continue;
             }
             foreach ($votes as $gameId => $vote) {
                 if ($vote === 0) {
+                    \Log::info("[Vote.isVotingComplete] Player " . $playerId . " has vote=0 for game " . $gameId . ", NOT complete");
                     return false;
                 }
             }
         }
+        \Log::info("[Vote.isVotingComplete] Voting IS complete");
         return true;
     }
 
     public function getRemainingPlayersProgress($currentLobby)
     {
         $currentUsers = $currentLobby->getUsers();
+        \Log::info("[Vote.getRemainingPlayersProgress] Current users: " . json_encode($currentUsers) . " playerVotes keys: " . json_encode(array_keys($this->playerVotes)));
+
         $remainingPlayerIds = [];
 
         foreach ($this->playerVotes as $playerId => $votes) {
+            \Log::info("[Vote.getRemainingPlayersProgress] Checking player: " . $playerId . " in currentUsers: " . (in_array($playerId, $currentUsers) ? "yes" : "no"));
             if (!in_array($playerId, $currentUsers)) {
                 continue;
             }
             foreach ($votes as $gameId => $vote) {
+                \Log::info("[Vote.getRemainingPlayersProgress] Player " . $playerId . " game " . $gameId . " vote: " . $vote);
                 if ($vote === 0) {
                     $remainingPlayerIds[] = $playerId;
                     break; // Move to next player
@@ -212,6 +224,8 @@ class Vote
         }
 
         $remainingNames = User::whereIn('id', $remainingPlayerIds)->pluck('name')->toArray();
+
+        \Log::info("[Vote.getRemainingPlayersProgress] Remaining: " . json_encode($remainingPlayerIds) . " names: " . json_encode($remainingNames));
 
         return [
             'remaining_count' => count($remainingPlayerIds),
