@@ -78,24 +78,20 @@ class VoteController extends Controller
         try {
             $user = $request->user();
             if (!$user) {
-                \Log::info("[postVote] User not authenticated");
                 return response()->json(
                     ["success" => false, "error" => "User not authenticated"],
                     401,
                 );
             }
 
-            \Log::info("[postVote] User: " . $user->id . " voting on game_id: " . $request->game_id . " vote: " . $request->vote);
-
             $validated = $request->validate([
                 "game_id" => "required|integer",
-                "vote" => "required|integer|in:1,-1", // 1 = upvote, -1 = downvote
+                "vote" => "required|integer|in:1,-1",
             ]);
 
             $userLobby = $this->getCurrentLobby($user);
 
             if (!$userLobby) {
-                \Log::info("[postVote] User not in any lobby, user: " . $user->id);
                 return response()->json(
                     ["success" => false, "error" => "You are not in any lobby"],
                     400,
@@ -105,7 +101,6 @@ class VoteController extends Controller
             $vote = $this->getOrCreateVote($userLobby);
 
             if (!$vote) {
-                \Log::info("[postVote] Voting not started yet, lobby: " . $userLobby->getId());
                 return response()->json(
                     [
                         "success" => false,
@@ -115,13 +110,11 @@ class VoteController extends Controller
                 );
             }
 
-            // Check if user has already voted on this game
             $playerVotes = $vote->getPlayerVotes();
             if (
                 isset($playerVotes[$user->id][$validated["game_id"]]) &&
                 $playerVotes[$user->id][$validated["game_id"]] !== 0
             ) {
-                \Log::info("[postVote] Already voted, user: " . $user->id . " game_id: " . $validated["game_id"]);
                 return response()->json(
                     [
                         "success" => false,
@@ -131,18 +124,14 @@ class VoteController extends Controller
                 );
             }
 
-            // Cast the vote
             $vote->voteGame(
                 $validated["game_id"],
                 $user->id,
                 $validated["vote"],
             );
 
-            // Update cache with new vote data
             $voteId = "vote_" . $userLobby->getId();
             Cache::put($voteId, $vote);
-
-            \Log::info("[postVote] Vote cast successfully, user: " . $user->id . " game_id: " . $validated["game_id"]);
 
             $statistic = UserStatistic::getOrCreateForUser($user->id);
             $statistic->incrementGamesVotedOn();
@@ -228,19 +217,15 @@ class VoteController extends Controller
         try {
             $user = $request->user();
             if (!$user) {
-                \Log::info("[voteResult] User not authenticated");
                 return response()->json(
                     ["success" => false, "error" => "User not authenticated"],
                     401,
                 );
             }
 
-            \Log::info("[voteResult] Fetching results for user: " . $user->id);
-
             $userLobby = $this->getCurrentLobby($user);
 
             if (!$userLobby) {
-                \Log::info("[voteResult] User not in any lobby, user: " . $user->id);
                 return response()->json(
                     ["success" => false, "error" => "You are not in any lobby"],
                     400,
@@ -248,10 +233,8 @@ class VoteController extends Controller
             }
 
             $lobby = $userLobby;
-            \Log::info("[voteResult] Lobby id: " . $lobby->getId() . " lobby state: " . ($lobby->getLobbyState() ? "started" : "not started"));
 
             if (!$lobby->getLobbyState()) {
-                \Log::info("[voteResult] Voting has not started yet, lobby: " . $lobby->getId());
                 return response()->json(
                     [
                         "success" => false,
@@ -264,7 +247,6 @@ class VoteController extends Controller
             $vote = $this->getOrCreateVote($lobby);
 
             if (!$vote) {
-                \Log::info("[voteResult] No voting session found, lobby: " . $lobby->getId());
                 return response()->json(
                     ["success" => false, "error" => "No voting session found"],
                     400,
@@ -272,11 +254,9 @@ class VoteController extends Controller
             }
 
             $isVotingComplete = $vote->isVotingComplete($lobby);
-            \Log::info("[voteResult] Voting complete: " . ($isVotingComplete ? "yes" : "no") . " lobby: " . $lobby->getId());
 
             if (!$isVotingComplete) {
                 $progress = $vote->getRemainingPlayersProgress($lobby);
-                \Log::info("[voteResult] Progress: " . json_encode($progress));
                 return response()->json(
                     array_merge([
                         "success" => true,
@@ -289,12 +269,9 @@ class VoteController extends Controller
             $results = $vote->getVoteResults();
             $favorites = $vote->getVotedGames();
 
-            // Sort games by total votes (descending)
             $sortedGames = collect($results["games"])
                 ->sortByDesc("votes")
                 ->toArray();
-
-            \Log::info("[voteResult] Returning results with " . count($sortedGames) . " games");
 
             return response()->json(
                 [
@@ -335,29 +312,22 @@ class VoteController extends Controller
         try {
             $user = $request->user();
             if (!$user) {
-                \Log::info("[startVoting] User not authenticated");
                 return response()->json(
                     ["success" => false, "error" => "User not authenticated"],
                     401,
                 );
             }
 
-            \Log::info("[startVoting] User: " . $user->id . " starting vote");
-
             $lobby = $this->getCurrentLobby($user);
 
             if (!$lobby) {
-                \Log::info("[startVoting] User not in any lobby");
                 return response()->json(
                     ["success" => false, "error" => "You are not in any lobby"],
                     400,
                 );
             }
 
-            \Log::info("[startVoting] Lobby id: " . $lobby->getId() . " current state: " . ($lobby->getLobbyState() ? "started" : "not started"));
-
             if ($lobby->getLobbyState()) {
-                \Log::info("[startVoting] Voting already started");
                 return response()->json(
                     [
                         "success" => false,
@@ -368,7 +338,6 @@ class VoteController extends Controller
             }
 
             $games = $this->getLobbyGames($lobby);
-            \Log::info("[startVoting] Games from lobby: " . count($games));
 
             if (empty($games)) {
                 $lobbies = Cache::get("lobbies", []);
@@ -386,13 +355,10 @@ class VoteController extends Controller
 
             $lobby->startLobby($user);
 
-            // Update cache
             $lobbies = Cache::get("lobbies", []);
             $lobbyId = $lobby->getId();
             $lobbies[$lobbyId] = $lobby;
             Cache::put("lobbies", $lobbies);
-
-            \Log::info("[startVoting] Vote started for lobby: " . $lobbyId);
 
             return response()->json(
                 [
@@ -456,7 +422,7 @@ class VoteController extends Controller
                                 "game_id" => $gameData->game_id,
                             ]);
                             $game->id = $gameData->id;
-                            $game->timestamps = false; // Prevent timestamp updates
+                            $game->timestamps = false;
 
                             return [
                                 "id" => $gameData->id,
@@ -494,7 +460,7 @@ class VoteController extends Controller
             if ($voteSession) {
                 $playerVotes = $voteSession->getPlayerVotes();
                 $userVotes = $playerVotes[$user->id] ?? [];
-                
+
                 $games = array_filter($games, function($g) use ($userVotes) {
                     return !isset($userVotes[$g['game_id']]) || $userVotes[$g['game_id']] === 0;
                 });

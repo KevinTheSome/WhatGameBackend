@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Game;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class Vote
 {
@@ -18,7 +17,6 @@ class Vote
 
     public function __construct($lobby, $games)
     {
-        // Validate inputs
         if (!is_object($lobby) || !method_exists($lobby, "getId")) {
             throw new \InvalidArgumentException("Invalid lobby object");
         }
@@ -52,10 +50,6 @@ class Vote
                 $this->games[$gameId]["background_image"] =
                     $data["background_image"] ?? null;
             } catch (\Exception $e) {
-                Log::error(
-                    "Failed to get background image for game {$gameId}",
-                    ["error" => $e->getMessage()],
-                );
                 $this->games[$gameId]["background_image"] = null;
             }
         }
@@ -67,37 +61,31 @@ class Vote
     private function initializePlayerVotes()
     {
         $lobbyPlayers = $this->lobby->getUsers();
-        \Log::info("[Vote.initializePlayerVotes] Lobby players: " . json_encode($lobbyPlayers) . " games: " . json_encode(array_keys($this->games)));
 
         foreach ($lobbyPlayers as $playerId) {
             $this->playerVotes[$playerId] = [];
             foreach (array_keys($this->games) as $gameId) {
-                $this->playerVotes[$playerId][$gameId] = 0; // 0 = no vote, 1 = upvote, -1 = downvote
+                $this->playerVotes[$playerId][$gameId] = 0;
             }
         }
-        \Log::info("[Vote.initializePlayerVotes] Initialized playerVotes: " . json_encode(array_keys($this->playerVotes)));
     }
 
     public function voteGame($gameId, $userId, $vote)
     {
-        // Validate vote
         if ($vote !== 1 && $vote !== -1) {
             throw new \InvalidArgumentException(
                 "Vote must be 1 (upvote) or -1 (downvote)",
             );
         }
 
-        // Validate game exists
         if (!isset($this->games[$gameId])) {
             throw new \InvalidArgumentException("Invalid game ID");
         }
 
-        // Validate user is in lobby
         if (!isset($this->playerVotes[$userId])) {
             throw new \InvalidArgumentException("User is not in this lobby");
         }
 
-        // Remove previous vote if exists
         if (
             isset($this->playerVotes[$userId][$gameId]) &&
             $this->playerVotes[$userId][$gameId] !== 0
@@ -111,7 +99,6 @@ class Vote
             }
         }
 
-        // Apply new vote
         $this->playerVotes[$userId][$gameId] = $vote;
         $this->games[$gameId]["votes"] += $vote;
         if ($vote > 0) {
@@ -141,7 +128,6 @@ class Vote
             $playerFavorites = [];
             foreach ($votes as $gameId => $vote) {
                 if ($vote > 0) {
-                    // Only include upvotes as favorites
                     $playerFavorites[] = $gameId;
                 }
             }
@@ -161,7 +147,6 @@ class Vote
             if (isset($this->playerVotes[$playerId])) {
                 foreach ($this->playerVotes[$playerId] as $gameId => $vote) {
                     if ($vote > 0) {
-                        // Only include upvotes as favorites
                         $playerFavorites[] = $gameId;
                     }
                 }
@@ -184,10 +169,8 @@ class Vote
     public function isVotingComplete($currentLobby)
     {
         $currentUsers = $currentLobby->getUsers();
-        \Log::info("[Vote.isVotingComplete] Checking with " . count($currentUsers) . " users and " . count($this->playerVotes) . " player vote records");
 
         foreach ($this->playerVotes as $playerId => $votes) {
-            \Log::info("[Vote.isVotingComplete] Player: " . $playerId . " in currentUsers: " . (in_array($playerId, $currentUsers) ? "yes" : "no") . " votes: " . json_encode($votes));
             if (!in_array($playerId, $currentUsers)) {
                 continue;
             }
@@ -196,24 +179,19 @@ class Vote
                     continue;
                 }
                 if ($vote === 0) {
-                    \Log::info("[Vote.isVotingComplete] Player " . $playerId . " has vote=0 for game " . $gameId . ", NOT complete");
                     return false;
                 }
             }
         }
-        \Log::info("[Vote.isVotingComplete] Voting IS complete");
         return true;
     }
 
     public function getRemainingPlayersProgress($currentLobby)
     {
         $currentUsers = $currentLobby->getUsers();
-        \Log::info("[Vote.getRemainingPlayersProgress] Current users: " . json_encode($currentUsers) . " playerVotes keys: " . json_encode(array_keys($this->playerVotes)));
-
         $remainingPlayerIds = [];
 
         foreach ($this->playerVotes as $playerId => $votes) {
-            \Log::info("[Vote.getRemainingPlayersProgress] Checking player: " . $playerId . " in currentUsers: " . (in_array($playerId, $currentUsers) ? "yes" : "no"));
             if (!in_array($playerId, $currentUsers)) {
                 continue;
             }
@@ -221,7 +199,6 @@ class Vote
                 if (!isset($this->games[$gameId])) {
                     continue;
                 }
-                \Log::info("[Vote.getRemainingPlayersProgress] Player " . $playerId . " game " . $gameId . " vote: " . $vote);
                 if ($vote === 0) {
                     $remainingPlayerIds[] = $playerId;
                     break;
@@ -230,8 +207,6 @@ class Vote
         }
 
         $remainingNames = User::whereIn('id', $remainingPlayerIds)->pluck('name')->toArray();
-
-        \Log::info("[Vote.getRemainingPlayersProgress] Remaining: " . json_encode($remainingPlayerIds) . " names: " . json_encode($remainingNames));
 
         return [
             'remaining_count' => count($remainingPlayerIds),
