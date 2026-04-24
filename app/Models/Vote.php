@@ -192,6 +192,9 @@ class Vote
                 continue;
             }
             foreach ($votes as $gameId => $vote) {
+                if (!isset($this->games[$gameId])) {
+                    continue;
+                }
                 if ($vote === 0) {
                     \Log::info("[Vote.isVotingComplete] Player " . $playerId . " has vote=0 for game " . $gameId . ", NOT complete");
                     return false;
@@ -215,10 +218,13 @@ class Vote
                 continue;
             }
             foreach ($votes as $gameId => $vote) {
+                if (!isset($this->games[$gameId])) {
+                    continue;
+                }
                 \Log::info("[Vote.getRemainingPlayersProgress] Player " . $playerId . " game " . $gameId . " vote: " . $vote);
                 if ($vote === 0) {
                     $remainingPlayerIds[] = $playerId;
-                    break; // Move to next player
+                    break;
                 }
             }
         }

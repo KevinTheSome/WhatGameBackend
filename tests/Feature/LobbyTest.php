@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Log;
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Game;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -429,6 +430,7 @@ class LobbyTest extends TestCase
 
     public function test_start_voting_success()
     {
+        Game::create(["user_id" => $this->user->id, "game_id" => 1]);
         $lobby = new \App\Models\Lobby("Test", "public", 4, $this->user);
         $lobbyId = $lobby->getId();
         $lobbies = [$lobbyId => $lobby];
