@@ -68,7 +68,12 @@ class VoteController extends Controller
             $games = $this->getLobbyGames($lobby);
             $vote = new Vote($lobby, $games);
             Cache::put($voteId, $vote);
+            return $vote;
         }
+
+        $currentGames = $this->getLobbyGames($lobby);
+        $vote->syncNewGames($currentGames);
+        Cache::put($voteId, $vote);
 
         return $vote;
     }

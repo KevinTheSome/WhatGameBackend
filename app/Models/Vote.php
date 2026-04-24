@@ -251,4 +251,41 @@ class Vote
             "created_at" => $this->created_at,
         ];
     }
+
+    public function syncNewGames($newGames)
+    {
+        $lobbyPlayers = $this->lobby->getUsers();
+
+        foreach ($newGames as $gameId => $gameName) {
+            if (!isset($this->games[$gameId])) {
+                $this->games[$gameId] = [
+                    "name" => $gameName,
+                    "votes" => 0,
+                    "upvotes" => 0,
+                    "downvotes" => 0,
+                ];
+
+                foreach ($lobbyPlayers as $playerId) {
+                    if (!isset($this->playerVotes[$playerId][$gameId])) {
+                        $this->playerVotes[$playerId][$gameId] = 0;
+                    }
+                }
+            }
+        }
+
+        foreach ($lobbyPlayers as $playerId) {
+            if (!isset($this->playerVotes[$playerId])) {
+                $this->playerVotes[$playerId] = [];
+                foreach (array_keys($this->games) as $gameId) {
+                    $this->playerVotes[$playerId][$gameId] = 0;
+                }
+            } else {
+                foreach (array_keys($this->games) as $gameId) {
+                    if (!isset($this->playerVotes[$playerId][$gameId])) {
+                        $this->playerVotes[$playerId][$gameId] = 0;
+                    }
+                }
+            }
+        }
+    }
 }
