@@ -101,7 +101,7 @@ class LobbyController extends Controller
             return response()->json(
                 [
                     "success" => false,
-                    "error" => "Validation error",
+                    "error" => collect($e->errors())->flatten()->first() ?? "Validation error",
                     "errorMessages" => $e->errors(),
                 ],
                 422,
@@ -184,7 +184,7 @@ class LobbyController extends Controller
             return response()->json(
                 [
                     "success" => false,
-                    "error" => "Validation error",
+                    "error" => collect($e->errors())->flatten()->first() ?? "Validation error",
                     "errorMessage" => $e->errors(),
                 ],
                 422,
@@ -413,7 +413,7 @@ class LobbyController extends Controller
             return response()->json(
                 [
                     "success" => false,
-                    "error" => "Validation error",
+                    "error" => collect($e->errors())->flatten()->first() ?? "Validation error",
                     "errors" => $e->errors(),
                 ],
                 422,

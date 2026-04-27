@@ -200,7 +200,7 @@ class VoteController extends Controller
             return response()->json(
                 [
                     "success" => false,
-                    "error" => "Validation error",
+                    "error" => collect($e->errors())->flatten()->first() ?? "Validation error",
                     "errorMessages" => $e->errors(),
                 ],
                 422,
@@ -335,7 +335,7 @@ class VoteController extends Controller
             return response()->json(
                 [
                     "success" => false,
-                    "error" => "Validation error",
+                    "error" => collect($e->errors())->flatten()->first() ?? "Validation error",
                     "errorMessages" => $e->errors(),
                 ],
                 422,

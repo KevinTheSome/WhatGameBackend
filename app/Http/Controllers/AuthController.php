@@ -29,7 +29,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json(["error" => collect($validator->errors())->flatten()->first()], 422);
         }
 
         $user = User::create([
@@ -73,7 +73,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json(["error" => collect($validator->errors())->flatten()->first()], 422);
         }
 
         // parbauda vai lietotjas ir iedevis pareizu informciju par lietotaju
@@ -154,7 +154,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json(["error" => collect($validator->errors())->flatten()->first()], 422);
         }
 
         $user->update($request->only("name", "email", "profile_picture_url"));
