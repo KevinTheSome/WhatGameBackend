@@ -44,18 +44,18 @@ Route::middleware("auth:sanctum")->group(function () {
         GamesController::class,
         "addToFavourites",
     ])->name("addToFavourites");
-Route::post("/getUserFavourites", [
-    GamesController::class,
-    "getUserFavourites",
-])->name("getUserFavourites");
-Route::get("/gameDetails", [
-    GamesController::class,
-    "getGameDetails",
-])->name("getGameDetails");
-Route::get("/getRecommendations", [
-    GamesController::class,
-    "getRecommendations",
-])->name("getRecommendations");
+    Route::post("/getUserFavourites", [
+        GamesController::class,
+        "getUserFavourites",
+    ])->name("getUserFavourites");
+    Route::get("/gameDetails", [
+        GamesController::class,
+        "getGameDetails",
+    ])->name("getGameDetails");
+    Route::get("/getRecommendations", [
+        GamesController::class,
+        "getRecommendations",
+    ])->name("getRecommendations");
 
     // friends
     Route::post("/addFriend", [FriendController::class, "addFriend"])->name(

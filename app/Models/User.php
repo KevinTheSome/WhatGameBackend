@@ -13,7 +13,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
-    
+
     /**
      * Get all friends where this user is the sender
      */
@@ -21,7 +21,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Friend::class, 'sender_id');
     }
-    
+
     /**
      * Get all friends where this user is the receiver
      */
@@ -29,7 +29,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Friend::class, 'receiver_id');
     }
-    
+
     /**
      * Get all accepted friends
      */
@@ -44,13 +44,13 @@ class User extends Authenticatable
             ->where('accepted', true)
             ->join('users', 'users.id', '=', 'friends.sender_id')
             ->select('friends.*', 'users.name', 'users.profile_picture_url');
-            
+
         $sent_friends = $sent_friends_query->get();
         $received_friends = $received_friends_query->get();
 
         return $friends = array_merge($sent_friends->toArray(), $received_friends->toArray());
     }
-    
+
     /**
      * Get all pending friend requests
      */
@@ -61,7 +61,7 @@ class User extends Authenticatable
             ->with('sender')
             ->get();
     }
-    
+
     /**
      * Check if a user is a friend
      */
