@@ -27,14 +27,14 @@ class LobbyController extends Controller
 
     public function createLobby(Request $request): JsonResponse
     {
-        //validate request
-        $validated = $request->validate([
-            "name" => "required|string|max:50",
-            "filter" => "required|string|in:public,friends",
-            "max_players" => "required|integer|min:2|max:24",
-        ]);
-
         try {
+            //validate request
+            $validated = $request->validate([
+                "name" => "required|string|max:50",
+                "filter" => "required|string|in:public,friends",
+                "max_players" => "required|integer|min:2|max:24",
+            ]);
+
             $user = $request->user();
             //auth check
             if (!$user) {
@@ -121,8 +121,8 @@ class LobbyController extends Controller
 
     public function joinLobby(Request $request): JsonResponse
     {
-        $validated = $request->validate(["lobby_id" => "required|string"]);
         try {
+            $validated = $request->validate(["lobby_id" => "required|string"]);
             if (!$request->user()) {
                 return response()->json(
                     ["success" => false, "error" => "User not authenticated"],
