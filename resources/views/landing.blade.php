@@ -249,7 +249,7 @@
             <p class="text-xl text-app-fg/70 mb-10">Download WhatGame today and get straight to gaming.</p>
 
             <div class="flex justify-center">
-                <a href="https://drive.google.com/file/d/1I2GtcQ3RvgmtzSB-pFx-ttH9XRBcaK_N/view?usp=sharing" class="px-8 py-4 rounded-xl bg-app-primary text-app-bg font-bold text-lg hover:shadow-[0_0_30px_rgba(79,216,235,0.4)] transition-all flex items-center justify-center gap-3 group">
+                <a href="https://drive.google.com/file/d/1qxbFTUBAC4WGQYPKXSV227dhvGFrHJIS/view?usp=sharing" class="px-8 py-4 rounded-xl bg-app-primary text-app-bg font-bold text-lg hover:shadow-[0_0_30px_rgba(79,216,235,0.4)] transition-all flex items-center justify-center gap-3 group">
                     <span>Download App</span>
                     <svg class="w-5 h-5 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 </a>
