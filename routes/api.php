@@ -64,7 +64,7 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::post("/acceptFriend", [
         FriendController::class,
         "acceptFriend",
-    ])->name("addFriend");
+    ])->name("acceptFriend");
     Route::post("/getFriends", [FriendController::class, "getFriends"])->name(
         "getFriends",
     );

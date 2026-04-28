@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Game;
 use Illuminate\Support\Facades\Log;
 
-class gamesController extends Controller
+class GamesController extends Controller
 {
     public function searchGame(Request $request)
     {
@@ -84,28 +84,33 @@ class gamesController extends Controller
         ]);
 
         try {
-            if (
-                Game::where("game_id", $request->game_id)
-                    ->where("user_id", $request->user()->id)
-                    ->exists()
-            ) {
-                Game::where("game_id", $request->game_id)
-                    ->where("user_id", $request->user()->id)
-                    ->delete();
+            $userId = $request->user()->id;
+            $gameId = $request->game_id;
+
+            $favorite = Game::where("game_id", $gameId)
+                ->where("user_id", $userId)
+                ->first();
+
+            if ($favorite) {
+                $favorite->delete();
+                $message = "Game removed from favourites";
             } else {
                 Game::create([
-                    "game_id" => $request->game_id,
-                    "user_id" => $request->user()->id,
+                    "game_id" => $gameId,
+                    "user_id" => $userId,
                 ]);
+                $message = "Game added to favourites";
             }
 
             return response()->json(
-                ["success" => "Game added to favourites"],
+                ["success" => $message],
                 200,
             );
         } catch (Throwable $th) {
-            Log::error("Failed to get games from RAWG API", [
+            Log::error("Failed to update game favorite status", [
                 "error" => $th->getMessage(),
+                "game_id" => $request->game_id,
+                "user_id" => $request->user() ? $request->user()->id : 'null',
             ]);
 
             return response()->json(
@@ -126,26 +131,22 @@ class gamesController extends Controller
         ]);
         try {
             $favResponse = [];
-            if (!isset($request->user_id)) {
-                $favourites = Game::where(
-                    "user_id",
-                    $request->user()->id,
-                )->get();
-                foreach ($favourites as $key => $value) {
-                    $gameInfo = $value->getInfo();
-                    if (is_array($gameInfo)) {
-                        $gameInfo["favorited"] = true;
-                        $favResponse[] = $gameInfo;
-                    }
-                }
-            } else {
-                $favourites = Game::where("user_id", $request->user_id)->get();
-                foreach ($favourites as $key => $value) {
-                    $gameInfo = $value->getInfo();
-                    if (is_array($gameInfo)) {
-                        $gameInfo["favorited"] = true;
-                        $favResponse[] = $gameInfo;
-                    }
+            $favourites = Game::where(
+                "user_id",
+                isset($request->user_id) ? $request->user_id : $request->user()->id,
+            )->get();
+            foreach ($favourites as $key => $value) {
+                $gameInfo = $value->getInfo();
+                if (is_array($gameInfo) && isset($gameInfo["id"])) {
+                    $gameInfo["favorited"] = true;
+                    $favResponse[] = $gameInfo;
+                } else {
+                    $favResponse[] = [
+                        "id" => $value->game_id,
+                        "name" => "Unknown Game",
+                        "background_image" => null,
+                        "favorited" => true,
+                    ];
                 }
             }
 
@@ -177,7 +178,7 @@ class gamesController extends Controller
         }
     }
 
-    public function delUserFavourit(Request $request)
+    public function delUserFavourite(Request $request)
     {
         $request->validate([
             "game_id" => "required|integer",

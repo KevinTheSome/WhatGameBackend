@@ -29,18 +29,26 @@ class Game extends Model
                     env("RAWG_API_KEY"),
             );
 
-            $results->throw();
+            if ($results->failed()) {
+                return [
+                    "id" => $this->game_id,
+                    "name" => "Unknown Game",
+                    "background_image" => null,
+                ];
+            }
 
             return $results->json();
         } catch (Exception $e) {
-            Log::error("Failed to get games from RAWG API", [
+            Log::error("Failed to get game info from RAWG API", [
+                "game_id" => $this->game_id,
                 "error" => $e->getMessage(),
             ]);
 
-            return response()->json(
-                ["error" => "Failed to get games from RAWG API"],
-                500,
-            );
+            return [
+                "id" => $this->game_id,
+                "name" => "Unknown Game",
+                "background_image" => null,
+            ];
         }
     }
 }
