@@ -87,9 +87,13 @@ class GamesController extends Controller
             $userId = $request->user()->id;
             $gameId = $request->game_id;
 
+            Log::info("addToFavourites: user_id=" . $userId . " game_id=" . $gameId);
+
             $favorite = Game::where("game_id", $gameId)
                 ->where("user_id", $userId)
                 ->first();
+
+            Log::info("addToFavourites: existing favorite found=" . ($favorite ? "yes" : "no"));
 
             if ($favorite) {
                 $favorite->delete();
@@ -101,6 +105,8 @@ class GamesController extends Controller
                 ]);
                 $message = "Game added to favourites";
             }
+
+            Log::info("addToFavourites: result=" . $message);
 
             return response()->json(
                 ["success" => $message],
@@ -135,12 +141,18 @@ class GamesController extends Controller
                 "user_id",
                 isset($request->user_id) ? $request->user_id : $request->user()->id,
             )->get();
+
+            Log::info("getUserFavourites: found " . count($favourites) . " favorites for user_id=" . (isset($request->user_id) ? $request->user_id : $request->user()->id));
+
             foreach ($favourites as $key => $value) {
+                Log::info("getUserFavourites: processing game_id=" . $value->game_id);
                 $gameInfo = $value->getInfo();
+                Log::info("getUserFavourites: gameInfo for game_id=" . $value->game_id . " is_array=" . (is_array($gameInfo) ? "yes" : "no") . " keys=" . (is_array($gameInfo) ? implode(",", array_keys($gameInfo)) : "N/A"));
                 if (is_array($gameInfo) && isset($gameInfo["id"])) {
                     $gameInfo["favorited"] = true;
                     $favResponse[] = $gameInfo;
                 } else {
+                    Log::info("getUserFavourites: using fallback for game_id=" . $value->game_id);
                     $favResponse[] = [
                         "id" => $value->game_id,
                         "name" => "Unknown Game",

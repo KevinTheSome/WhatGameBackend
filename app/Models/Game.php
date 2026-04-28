@@ -24,12 +24,16 @@ class Game extends Model
     public function getInfo()
     {
         try {
+            Log::info("Game.getInfo: fetching game_id=" . $this->game_id);
             $results = Http::get(
                 "https://api.rawg.io/api/games/{$this->game_id}?key=" .
                     env("RAWG_API_KEY"),
             );
 
+            Log::info("Game.getInfo: RAWG API status=" . $results->status() . " for game_id=" . $this->game_id);
+
             if ($results->failed()) {
+                Log::warning("Game.getInfo: RAWG API call failed for game_id=" . $this->game_id . " status=" . $results->status());
                 return [
                     "id" => $this->game_id,
                     "name" => "Unknown Game",
@@ -39,10 +43,7 @@ class Game extends Model
 
             return $results->json();
         } catch (Exception $e) {
-            Log::error("Failed to get game info from RAWG API", [
-                "game_id" => $this->game_id,
-                "error" => $e->getMessage(),
-            ]);
+            Log::error("Game.getInfo: exception for game_id=" . $this->game_id . " error=" . $e->getMessage());
 
             return [
                 "id" => $this->game_id,
